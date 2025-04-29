@@ -23,7 +23,22 @@ public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
 
     public override void Draw(DrawnGeometry drawable)
     {
+        if (drawable.HasTransform)
+        {
+            Canvas.Save();
+            var p = new SKPoint(drawable.Xo, drawable.Yo);
+
+            if (drawable.HasRotation)
+            {
+                Canvas.Translate(p.X, p.Y);
+                Canvas.RotateDegrees(drawable.RotateTransform);
+                Canvas.Translate(-p.X, -p.Y);
+            }
+        }
+
         drawable.Draw(this);
+
+        if (drawable.HasTransform) Canvas.Restore();
     }
 
     public override void DisposePaint()

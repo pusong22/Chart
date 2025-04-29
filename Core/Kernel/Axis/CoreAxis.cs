@@ -11,6 +11,7 @@ public abstract class CoreAxis
     public Bound? DataBound { get; protected set; }
     public string? Name { get; set; }
     public float NameSize { get; set; }
+    public Padding? NamePadding { get; set; }
     public Paint? NamePaint { get; set; }
 
     public Rect NameDesiredRect { get; set; }

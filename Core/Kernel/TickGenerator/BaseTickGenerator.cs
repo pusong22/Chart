@@ -13,7 +13,7 @@ namespace Core.Kernel.TickGenerator
 
         protected int MinorCount { get; set; }
 
-        public Paint? LabelPaint { get; set; }  
+        public Paint? LabelPaint { get; set; }
         public string? MaxLabel { get; protected set; }
 
         public abstract IEnumerable<Tick> Generate(Bound range, bool vertical, float axisLength);
@@ -29,7 +29,7 @@ namespace Core.Kernel.TickGenerator
                 {
                     Text = label,
                     TextSize = 12f,
-                    Paint = LabelPaint
+                    Paint = LabelPaint,
                 };
 
                 Size measuredValue = geometry.Measure();

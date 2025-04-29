@@ -16,8 +16,9 @@ public partial class Form1 : Form
             new Axis()
             {
                 NamePaint = new SolidColorPaint(),
-                Name = "TEST\r\naaaa",
-                NameSize = 12f
+                Name = "TEST1\r\nTEST2\r\nTEST3",
+                NameSize = 12f,
+                NamePadding = new Core.Primitive.Padding(25f)
             }
         ];
 
@@ -25,7 +26,10 @@ public partial class Form1 : Form
         [
             new Axis()
             {
-
+                NamePaint = new SolidColorPaint(),
+                Name = "TEST1\r\nTEST2\r\nTEST3",
+                NameSize = 12f,
+                //NamePadding = new Core.Primitive.Padding(15f)
             }
         ];
 

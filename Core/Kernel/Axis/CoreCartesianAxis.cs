@@ -40,15 +40,26 @@ public abstract class CartesianAxis<TTLabelGeometry> : CoreCartesianAxis
 
         if (Name is not null && NamePaint is not null)
         {
-            _nameGeometry ??= new TTLabelGeometry
-            {
-                Text = Name,
-                TextSize = NameSize,
-                Paint = NamePaint
-            };
+            _nameGeometry ??= new TTLabelGeometry();
+            _nameGeometry.Text = Name;
+            _nameGeometry.TextSize = NameSize;
+            _nameGeometry.Paint = NamePaint;
+            _nameGeometry.RotateTransform = Orientation == AxisOrientation.X
+                    ? 0
+                    : -90;
+            _nameGeometry.NamePadding = NamePadding;
 
-            _nameGeometry.Xo = NameDesiredRect.X + NameDesiredRect.Width * 0.5f;
-            _nameGeometry.Yo = NameDesiredRect.Y + NameDesiredRect.Height * 0.5f;
+            if (Orientation == AxisOrientation.X)
+            {
+                _nameGeometry.Xo = NameDesiredRect.X + NameDesiredRect.Width * 0.5f;
+                _nameGeometry.Yo = NameDesiredRect.Y + NameDesiredRect.Height * 0.5f;
+
+            }
+            else
+            {
+                _nameGeometry.Xo = NameDesiredRect.X + NameDesiredRect.Width * 0.5f;
+                _nameGeometry.Yo = NameDesiredRect.Y + NameDesiredRect.Height * 0.5f;
+            }
 
             chart.Canvas.AddDrawnTask(NamePaint, _nameGeometry);
         }
@@ -59,14 +70,16 @@ public abstract class CartesianAxis<TTLabelGeometry> : CoreCartesianAxis
         if (Name is null || NamePaint is null)
             return new Size(0f, 0f);
 
-        var geometry = new TTLabelGeometry()
-        {
-            Text = Name,
-            TextSize = NameSize,
-            Paint = NamePaint
-        };
-
-        return geometry.Measure();
+        _nameGeometry ??= new TTLabelGeometry();
+        _nameGeometry.Text = Name;
+        _nameGeometry.TextSize = NameSize;
+        _nameGeometry.Paint = NamePaint;
+        _nameGeometry.RotateTransform = Orientation == AxisOrientation.X
+                ? 0
+                : -90;
+        _nameGeometry.NamePadding = NamePadding;
+        
+        return _nameGeometry.Measure();
     }
 
     public override Size MeasureTickLabelSize()
@@ -78,7 +91,8 @@ public abstract class CartesianAxis<TTLabelGeometry> : CoreCartesianAxis
         {
             Text = _generator?.MaxLabel,
             TextSize = NameSize,
-            Paint = NamePaint
+            Paint = NamePaint,
+            NamePadding = NamePadding,
         };
 
         return geometry.Measure();

@@ -15,6 +15,8 @@ public class LabelGeometry : BaseLabelGeometry
 
         var skContext = (SkiaSharpDrawnContext)context;
 
+        var p = NamePadding ?? new Padding(0f, 0f, 0f, 0f);
+
         _ = Measure();
         var skPaint = (SkiaSharpPaint)Paint;
         var typeface = skPaint.GetSKTypeface();
@@ -30,7 +32,7 @@ public class LabelGeometry : BaseLabelGeometry
         {
             //font.MeasureText(line, out var bound, skContext.ActivateSkPaint);
 
-            skContext.Canvas.DrawText(line, Xo, Yo + h, font, skContext.ActivateSkPaint);
+            skContext.Canvas.DrawText(line, Xo + p.Left, Yo + p.Top + h, font, skContext.ActivateSkPaint);
 
             h += _maxTextHeight;
         }
@@ -73,11 +75,13 @@ public class LabelGeometry : BaseLabelGeometry
 
         var h = _maxTextHeight * _lines;
 
-        var size = new Size(
-            w,
-            h);
+        var padding = NamePadding ?? new Padding(0f, 0f, 0f, 0f);
 
-        return size;//.GetRotatedSize(RotateTransform);
+        var size = new Size(
+            w + padding.Left + padding.Right,
+            h + padding.Top + padding.Bottom);
+
+        return size.GetRotatedSize(RotateTransform);
     }
 
 
