@@ -1,4 +1,5 @@
 using Core.Kernel.Drawing;
+using Core.Kernel.Drawing.Geometry;
 
 namespace Core.Kernel.Chart;
 public class Canvas
@@ -40,12 +41,7 @@ public class Canvas
                 context.DisposePaint();
             }
 
-
-            foreach (var item in _deletedpaintTask)
-            {
-                _paintTask[item].Clear();
-                _paintTask.Remove(item);
-            }
+            ReleasePaint(_deletedpaintTask);
 
             context.EndDraw();
         }
@@ -69,5 +65,26 @@ public class Canvas
     public void Invalidate()
     {
         InvalidatedHandler?.Invoke(this, null);
+    }
+
+    public void ReleasePaint(Paint? paint)
+    {
+        if (paint is null) return;
+
+        _paintTask[paint].Clear();
+        _paintTask.Remove(paint);
+    }
+
+    public void ReleasePaint(IEnumerable<Paint?>? paints)
+    {
+        if (paints is null) return;
+
+        foreach (var item in paints)
+        {
+            if (item is null) continue;
+
+            _paintTask[item].Clear();
+            _paintTask.Remove(item);
+        }
     }
 }

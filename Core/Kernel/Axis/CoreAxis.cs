@@ -14,6 +14,10 @@ public abstract class CoreAxis
     public Padding? NamePadding { get; set; }
     public Paint? NamePaint { get; set; }
 
+    public float LabelSize { get; set; }
+    public Padding? LabelPadding { get; set; }
+    public Paint? LabelPaint { get; set; }
+
     public Rect NameDesiredRect { get; set; }
     public Rect LabelDesiredRect { get; set; }
 

@@ -30,18 +30,20 @@ namespace Core.Kernel.Layout
                 if (axis.Position == AxisPosition.Start)
                 {
                     if (temp > b) b = temp;
+
+                    axis.NameDesiredRect = new Rect(
+                        new Point(0f, chart.ScaledControlSize.Height - nameSize.Height),
+                        new Size(chart.ScaledControlSize.Width, nameSize.Height));
+                    
+                    axis.LabelDesiredRect = new Rect(
+                        new Point(0f, axis.NameDesiredRect.Y - tickLabelSize.Height),
+                        new Size(chart.ScaledControlSize.Width, tickLabelSize.Height));
                 }
                 else
                 {
                     if (temp > t) t = temp;
-                }
 
-                axis.NameDesiredRect = new Rect(
-                    new Point(0f, chart.ScaledControlSize.Height - nameSize.Height),
-                    new Size(chart.ScaledControlSize.Width, nameSize.Height));
-                axis.LabelDesiredRect = new Rect(
-                    new Point(0f, axis.NameDesiredRect.Y - tickLabelSize.Height),
-                    new Size(chart.ScaledControlSize.Width, tickLabelSize.Height));
+                }
             }
 
             float yaxisLength = chart.ScaledControlSize.Height / yaxisCount;
@@ -57,18 +59,19 @@ namespace Core.Kernel.Layout
                 if (axis.Position == AxisPosition.Start)
                 {
                     if (temp > l) l = temp;
+
+                    axis.NameDesiredRect = new Rect(
+                        new Point(0f, 0f),
+                        new Size(nameSize.Width, chart.ScaledControlSize.Height));
+                    
+                    axis.LabelDesiredRect = new Rect(
+                        new Point(nameSize.Width, 0f),
+                        new Size(tickLabelSize.Width, chart.ScaledControlSize.Height));
                 }
                 else
                 {
                     if (temp > r) r = temp;
                 }
-
-                axis.NameDesiredRect = new Rect(
-                  new Point(nameSize.Width, 0f),
-                  new Size(nameSize.Width, chart.ScaledControlSize.Height));
-                axis.LabelDesiredRect = new Rect(
-                    new Point(tickLabelSize.Width + nameSize.Width, 0f),
-                    new Size(tickLabelSize.Width, chart.ScaledControlSize.Height));
             }
 
             float xOffset = 0f, yOffset = 0f;

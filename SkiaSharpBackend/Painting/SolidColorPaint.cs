@@ -1,7 +1,8 @@
 using Core.Kernel.Drawing;
 using SkiaSharp;
+using SkiaSharpBackend.Drawing;
 
-namespace SkiaSharpBackend;
+namespace SkiaSharpBackend.Painting;
 public class SolidColorPaint(SKColor color) : SkiaSharpPaint
 {
     private SKPaint? _paint;
@@ -20,8 +21,9 @@ public class SolidColorPaint(SKColor color) : SkiaSharpPaint
         _paint ??= new SKPaint();
 
         _paint.Color = color;
-
         _paint.IsAntialias = IsAntialias;
+        _paint.Style = Style == Core.Primitive.PaintStyle.Fill
+            ? SKPaintStyle.Fill : SKPaintStyle.Stroke;
 
         skContext.ActivateSkPaint = _paint;
     }

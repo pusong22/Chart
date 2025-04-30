@@ -1,6 +1,7 @@
 using Core.Kernel.Chart;
 using SkiaSharp.Views.Desktop;
 using SkiaSharpBackend;
+using SkiaSharpBackend.Drawing;
 
 namespace Plot.WinForm;
 public partial class CanvasControl : UserControl

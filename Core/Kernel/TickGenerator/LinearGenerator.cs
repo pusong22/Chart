@@ -1,5 +1,5 @@
 using System.Runtime.CompilerServices;
-using Core.Kernel.Drawing;
+using Core.Kernel.Drawing.Geometry;
 using Core.Primitive;
 
 namespace Core.Kernel.TickGenerator

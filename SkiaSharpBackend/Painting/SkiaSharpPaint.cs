@@ -1,7 +1,7 @@
 using Core.Kernel.Drawing;
 using SkiaSharp;
 
-namespace SkiaSharpBackend;
+namespace SkiaSharpBackend.Painting;
 public abstract class SkiaSharpPaint : Paint
 {
     public SKFontStyle? SKFontStyle { get; set; }

@@ -3,8 +3,6 @@ using Core.Primitive;
 namespace Core.Kernel.Drawing;
 public abstract class Paint : IDisposable
 {
-    public Rect ClipRectangle { get; set; }
-
     public string? FontFamily { get; set; }
     public bool IsAntialias { get; set; } = true;
 

@@ -1,5 +1,5 @@
 using Core.Kernel.Chart;
-using Core.Kernel.Drawing;
+using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.TickGenerator;
 using Core.Primitive;
 
@@ -27,10 +27,12 @@ public abstract class CoreCartesianAxis : CoreAxis
     public abstract void Invalidate(CoreChart chart);
 }
 
-public abstract class CartesianAxis<TTLabelGeometry> : CoreCartesianAxis
+public abstract class CartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCartesianAxis
     where TTLabelGeometry : BaseLabelGeometry, new()
+    where TLineGeometry : BaseLineGeometry, new()
 {
     private TTLabelGeometry? _nameGeometry;
+    private TLineGeometry? _lineGeometry;
     private BaseTickGenerator<TTLabelGeometry>? _generator;
     public IEnumerable<Tick>? Ticks { get; private set; }
 
@@ -47,7 +49,7 @@ public abstract class CartesianAxis<TTLabelGeometry> : CoreCartesianAxis
             _nameGeometry.RotateTransform = Orientation == AxisOrientation.X
                     ? 0
                     : -90;
-            _nameGeometry.NamePadding = NamePadding;
+            _nameGeometry.Padding = NamePadding;
 
             if (Orientation == AxisOrientation.X)
             {
@@ -77,22 +79,23 @@ public abstract class CartesianAxis<TTLabelGeometry> : CoreCartesianAxis
         _nameGeometry.RotateTransform = Orientation == AxisOrientation.X
                 ? 0
                 : -90;
-        _nameGeometry.NamePadding = NamePadding;
+        _nameGeometry.Padding = NamePadding;
         
         return _nameGeometry.Measure();
     }
 
     public override Size MeasureTickLabelSize()
     {
-        if (_generator?.MaxLabel is null || NamePaint is null)
+        return new Size();
+        if (_generator?.MaxLabel is null || LabelPaint is null)
             return new Size(0f, 0f);
 
         var geometry = new TTLabelGeometry()
         {
             Text = _generator?.MaxLabel,
-            TextSize = NameSize,
-            Paint = NamePaint,
-            NamePadding = NamePadding,
+            TextSize = LabelSize,
+            Paint = LabelPaint,
+            Padding = LabelPadding,
         };
 
         return geometry.Measure();
@@ -106,11 +109,11 @@ public abstract class CartesianAxis<TTLabelGeometry> : CoreCartesianAxis
             throw new Exception("Size isn`t invalid");
         }
 
-        if (NamePaint is null)
+        if (LabelPaint is null)
             return;
 
         _generator ??= new LinearGenerator<TTLabelGeometry>(Labeler);
-        _generator.LabelPaint = NamePaint;
+        _generator.LabelPaint = LabelPaint;
 
         bool vertical = Orientation == AxisOrientation.Y;
 

@@ -1,7 +1,8 @@
 using Core.Kernel.Drawing;
+using Core.Kernel.Drawing.Geometry;
 using SkiaSharp;
 
-namespace SkiaSharpBackend;
+namespace SkiaSharpBackend.Drawing;
 public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
     : DrawnContext
 {

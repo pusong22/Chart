@@ -1,3 +1,4 @@
+using Core.Kernel;
 using Core.Kernel.Axis;
 using Core.Kernel.Chart;
 using Core.Primitive;
@@ -8,8 +9,10 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
 {
     private CoreChart? _coreChart;
 
-    private IEnumerable<CoreAxis> _xAxes = [];
-    private IEnumerable<CoreAxis> _yAxes = [];
+    private IEnumerable<CoreAxis>? _xAxes;
+    private IEnumerable<CoreAxis>? _yAxes;
+
+    private CoreDrawnDataArea? _drawnDataArea;
 
     public CartesianChartControl()
     {
@@ -26,7 +29,7 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
         }
     }
 
-    public IEnumerable<CoreAxis> XAxes
+    public IEnumerable<CoreAxis>? XAxes
     {
         get => _xAxes;
         set
@@ -35,7 +38,7 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
         }
     }
 
-    public IEnumerable<CoreAxis> YAxes
+    public IEnumerable<CoreAxis>? YAxes
     {
         get => _yAxes;
         set
@@ -45,4 +48,9 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
     }
 
     public ElementLayoutKind ElementLayoutKind { get; set; } = ElementLayoutKind.Stack;
+    public CoreDrawnDataArea? CoreDrawnDataArea
+    {
+        get => _drawnDataArea;
+        set => _drawnDataArea = value;
+    }
 }

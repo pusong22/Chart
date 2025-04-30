@@ -1,6 +1,6 @@
 using Core.Primitive;
 
-namespace Core.Kernel.Drawing;
+namespace Core.Kernel.Drawing.Geometry;
 public abstract class DrawnGeometry
 {
     private float _rotateTransform;
@@ -21,6 +21,9 @@ public abstract class DrawnGeometry
     public bool HasTransform { get; set; }
     public bool HasRotation => RotateTransform != 0;
 
-    public abstract void Draw(DrawnContext context);
+    public Paint? Paint { get; set; }
+
+    public abstract void Draw<TDrawnContext>(TDrawnContext context)
+        where TDrawnContext : DrawnContext;
     public abstract Size Measure();
 }

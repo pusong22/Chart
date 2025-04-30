@@ -1,3 +1,5 @@
+using Core.Kernel.Drawing.Geometry;
+
 namespace Core.Kernel.Drawing;
 
 public abstract class DrawnContext
