@@ -2,6 +2,7 @@ using Core.Kernel.Axis;
 using Plot.WinForm;
 using SkiaSharp;
 using SkiaSharpBackend;
+using SkiaSharpBackend.Drawing;
 using SkiaSharpBackend.Painting;
 
 namespace App;
@@ -15,29 +16,33 @@ public partial class Form1 : Form
         SKColor gray = new(169, 169, 169, 169);
         SKColor red = new(255, 0, 0);
 
-        CoreAxis[] xAxes =
+        CoreCartesianAxis[] xAxes =
         [
             new Axis()
             {
                 LabelPaint = new SolidColorPaint(),
                 NamePaint = new SolidColorPaint(),
+                TickPaint = new SolidColorPaint(),
                 Name = "X Axis",
                 LabelSize = 12f,
                 NameSize = 12f,
-                NamePadding = new Core.Primitive.Padding(5f)
+                NamePadding = new Core.Primitive.Padding(5f),
+                LabelPadding = new Core.Primitive.Padding(15f),
             }
         ];
 
-        CoreAxis[] yAxes =
+        CoreCartesianAxis[] yAxes =
         [
             new Axis()
             {
                 LabelPaint = new SolidColorPaint(),
                 NamePaint = new SolidColorPaint(),
+                TickPaint = new SolidColorPaint(),
                 Name = "Y Axis",
                 LabelSize = 12f,
                 NameSize = 12f,
-                NamePadding = new Core.Primitive.Padding(5f)
+                NamePadding = new Core.Primitive.Padding(5f),
+                LabelPadding = new Core.Primitive.Padding(15f),
             }
         ];
 

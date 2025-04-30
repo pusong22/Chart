@@ -30,12 +30,14 @@ public class LabelGeometry : BaseLabelGeometry
             Typeface = typeface,
         };
 
+        // 因为是每次画一行，初始化的x,y是中心点，经测试发现skia字体逻辑是
+        // Align.Left, Align.Bottom，
         float h = _lines > 1
                     ? VerticalAlign switch
                     {
                         Align.Start => 0f,
-                        Align.Middle => -_lines * _maxTextHeight * 0.5f,
-                        Align.End => -_lines * _maxTextHeight,
+                        Align.Middle => -(_lines - 1) * _maxTextHeight * LineHeight * 0.5f,
+                        Align.End => -(_lines - 1) * _maxTextHeight * LineHeight,
                         _ => 0f
                     }
                     : 0f;

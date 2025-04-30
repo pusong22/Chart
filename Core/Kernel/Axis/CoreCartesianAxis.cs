@@ -15,12 +15,8 @@ public abstract class CoreCartesianAxis : CoreAxis
     public float X { get; set; }
     public float Y { get; set; }
 
-    public float Size { get; internal set; }
-
     public Paint? TickPaint { get; set; }
     public Paint? SubTickPaint { get; set; }
-    public Paint? SeperatorPaint { get; set; }
-    public Paint? SubSeperatorPaint { get; set; }
 
     public void Reset(AxisOrientation orientation)
     {
@@ -44,21 +40,17 @@ public abstract class CoreCartesianAxis : CoreAxis
     public abstract void Invalidate(CoreChart chart);
 }
 
-public abstract class CartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCartesianAxis
+public abstract class CoreCartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCartesianAxis
     where TTLabelGeometry : BaseLabelGeometry, new()
     where TLineGeometry : BaseLineGeometry, new()
 {
     private TTLabelGeometry? _nameGeometry;
-    private TLineGeometry? _tickGeometry;
-    private TLineGeometry? _subTickGeometry;
-    private TLineGeometry? _seperatorGeometry;
-    private TLineGeometry? _subSeperatorGeometry;
 
     private BaseTickGenerator<TTLabelGeometry>? _generator;
 
     public override void Invalidate(CoreChart chart)
     {
-        var cartesianChart = (CartesianChart)chart;
+        var controlSize = chart.ScaledControlSize;
 
         var scale = new Scaler(this, chart.DataRect);
 
@@ -88,39 +80,6 @@ public abstract class CartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCartes
             chart.Canvas.AddDrawnTask(NamePaint, _nameGeometry);
         }
 
-
-
-        if (TickPaint is not null)
-        {
-            _tickGeometry ??= new TLineGeometry();
-
-
-            chart.Canvas.AddDrawnTask(TickPaint, _tickGeometry);
-        }
-
-        if (SubTickPaint is not null)
-        {
-            _subTickGeometry ??= new TLineGeometry();
-
-            chart.Canvas.AddDrawnTask(SubTickPaint, _subTickGeometry);
-        }
-
-        if (SeperatorPaint is not null)
-        {
-            _seperatorGeometry ??= new TLineGeometry();
-
-            chart.Canvas.AddDrawnTask(SeperatorPaint, _seperatorGeometry);
-        }
-
-        if (SubSeperatorPaint is not null)
-        {
-            _subSeperatorGeometry ??= new TLineGeometry();
-
-            chart.Canvas.AddDrawnTask(SubSeperatorPaint, _subSeperatorGeometry);
-        }
-
-
-        // Generatick 
         GenerateTick(Orientation == AxisOrientation.X
             ? chart.DataRect.Width : chart.DataRect.Height);
 
@@ -132,26 +91,73 @@ public abstract class CartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCartes
 
             float tickLength = majorTick ? 5f : 3f;
             float x, y;
-            
+
             if (Orientation == AxisOrientation.X)
             {
                 x = scale.ToPixel(position);
-                y = Y;
+                y = Position == AxisPosition.Start
+                    ? controlSize.Height - Y
+                    : Y;
             }
             else
             {
-                x = X;
+                x = Position == AxisPosition.Start
+                    ? X
+                    : controlSize.Width - X;
                 y = scale.ToPixel(position);
             }
 
-            float x1, y1, x2, y2;
-            if (Orientation == AxisOrientation.X)
+            if (TickPaint is not null)
             {
-               x1 = 
+                float x1, x2, y1, y2;
+                if (Orientation == AxisOrientation.X)
+                {
+                    float a = y + LabelDesiredRect.Height * 0.5f; // =label height
+                    float b = y - LabelDesiredRect.Height * 0.5f;
+                    x1 = x;
+                    x2 = x;
+                    y1 = Position == AxisPosition.Start
+                        ? b : a - tickLength;
+                    y2 = Position == AxisPosition.Start
+                        ? b + tickLength : a;
+                }
+                else
+                {
+                    float a = x + LabelDesiredRect.Width * 0.5f; // =label Width
+                    float b = x - LabelDesiredRect.Width * 0.5f;
+                    y1 = y;
+                    y2 = y;
+                    x1 = Position == AxisPosition.Start
+                        ? a : b;
+                    x2 = Position == AxisPosition.Start
+                        ? a - tickLength : b + tickLength;
+                }
+
+                var tickGeometry = new TLineGeometry()
+                {
+                    Paint = TickPaint,
+                    X = x1,
+                    Y = y1,
+                    X1 = x2,
+                    Y1 = y2
+                };
+
+                chart.Canvas.AddDrawnTask(TickPaint, tickGeometry);
             }
-            else
+
+            if (majorTick && !string.IsNullOrWhiteSpace(label) && LabelPaint is not null)
             {
-               
+                var labelGeometry = new TTLabelGeometry()
+                {
+                    Text = label,
+                    TextSize = LabelSize,
+                    Paint = LabelPaint,
+                    Padding = LabelPadding,
+                    X = x,
+                    Y = y
+                };
+
+                chart.Canvas.AddDrawnTask(LabelPaint, labelGeometry);
             }
         }
     }

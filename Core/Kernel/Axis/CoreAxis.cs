@@ -1,4 +1,3 @@
-using Core.Kernel.Chart;
 using Core.Kernel.Drawing;
 using Core.Primitive;
 

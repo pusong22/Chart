@@ -1,9 +1,8 @@
 using Core.Kernel.Chart;
-using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
 using Core.Primitive;
 
-namespace Core.Kernel;
+namespace Core.Kernel.Drawing;
 public abstract class CoreDrawnDataArea
 {
     private Paint? _fill;
@@ -49,7 +48,6 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
 
         if (Fill is not null)
         {
-            Fill.RemoveOnCompleted = true;
             _fillGeometry ??= new TRectangleGeometry();
 
             _fillGeometry.X = drawLocation.X;
@@ -62,7 +60,6 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
 
         if (Stroke is not null)
         {
-            Stroke.RemoveOnCompleted = true;
             _strokeGeometry ??= new TRectangleGeometry();
 
             _strokeGeometry.X = drawLocation.X;

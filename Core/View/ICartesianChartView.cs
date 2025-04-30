@@ -1,5 +1,5 @@
-using Core.Kernel;
 using Core.Kernel.Axis;
+using Core.Kernel.Drawing;
 using Core.Primitive;
 
 namespace Core.View;

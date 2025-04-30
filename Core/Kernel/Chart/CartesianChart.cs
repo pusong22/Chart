@@ -1,12 +1,14 @@
-using Core.Default;
 using Core.Kernel.Axis;
+using Core.Kernel.Drawing;
 using Core.Kernel.Layout;
 using Core.Primitive;
 using Core.View;
+using System.Diagnostics;
 
 namespace Core.Kernel.Chart;
 
-public class CartesianChart(ICartesianChartView view, Canvas canvas) : CoreChart(view, canvas)
+public class CartesianChart(ICartesianChartView view, Canvas canvas)
+    : CoreChart(view, canvas)
 {
     private CoreDrawnDataArea? _previousDrawnDataArea;
     public CoreDrawnDataArea? CoreDrawnDataArea => view.CoreDrawnDataArea;
@@ -17,15 +19,12 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas) : CoreChart
 
     protected override void Measure()
     {
-
         var x = view.XAxes;
         var y = view.YAxes;
 
         if (x is null || x.Count() == 0 || y is null || y.Count() == 0)
         {
-            var engine = DefaultSetting.GetEngine();
-            x = [engine.GetDefaultCartesianAxis()];
-            y = [engine.GetDefaultCartesianAxis()];
+            throw new Exception($"{nameof(XAxes)} and {nameof(YAxes)} must contain at least one element.");
         }
 
         XAxes = x.Cast<CoreCartesianAxis>().ToArray();
@@ -60,10 +59,12 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas) : CoreChart
 
     protected override void Invalidate()
     {
+        Canvas.ReleasePaint();
+
         if (_previousDrawnDataArea is not null && CoreDrawnDataArea != _previousDrawnDataArea)
         {
-            canvas.ReleasePaint(_previousDrawnDataArea.Stroke);
-            canvas.ReleasePaint(_previousDrawnDataArea.Fill);
+            Canvas.ReleasePaint(_previousDrawnDataArea.Stroke);
+            Canvas.ReleasePaint(_previousDrawnDataArea.Fill);
             _previousDrawnDataArea = null;
         }
 

@@ -18,7 +18,7 @@ public abstract class DrawnGeometry
         }
     }
 
-    public bool HasTransform { get; set; }
+    public bool HasTransform { get; private set; }
     public bool HasRotation => RotateTransform != 0;
 
     public Paint? Paint { get; set; }

@@ -7,7 +7,6 @@ public class Canvas
     private readonly object _sync = new();
 
     private readonly Dictionary<Paint, HashSet<DrawnGeometry>> _paintTask = [];
-    private readonly HashSet<Paint> _deletedpaintTask = [];
     public event EventHandler? InvalidatedHandler;
 
     public void DrawFrame<TDrawnContext>(TDrawnContext context)
@@ -16,8 +15,6 @@ public class Canvas
         // 
         lock (_sync)
         {
-            _deletedpaintTask.Clear();
-
             context.BeginDraw();
 
             foreach (var item in _paintTask)
@@ -25,9 +22,6 @@ public class Canvas
                 var paint = item.Key;
 
                 if (paint is null) continue;
-
-                if (paint.RemoveOnCompleted)
-                    _deletedpaintTask.Add(paint);
 
                 context.InitializePaint(paint);
 
@@ -40,8 +34,6 @@ public class Canvas
 
                 context.DisposePaint();
             }
-
-            ReleasePaint(_deletedpaintTask);
 
             context.EndDraw();
         }
@@ -65,6 +57,11 @@ public class Canvas
     public void Invalidate()
     {
         InvalidatedHandler?.Invoke(this, null);
+    }
+
+    public void ReleasePaint()
+    {
+        _paintTask.Clear();
     }
 
     public void ReleasePaint(Paint? paint)

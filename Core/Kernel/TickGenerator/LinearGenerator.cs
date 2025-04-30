@@ -1,6 +1,5 @@
 using Core.Kernel.Axis;
 using Core.Kernel.Drawing.Geometry;
-using Core.Primitive;
 using System.Runtime.CompilerServices;
 
 namespace Core.Kernel.TickGenerator

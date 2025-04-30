@@ -6,7 +6,11 @@ public abstract class CoreChart(IChartView view, Canvas canvas)
 {
     private readonly object _sync = new();
 
-    public Canvas Canvas { get; } = canvas;
+    #region Configure
+    public bool EnableLog { get; set; } = false;
+    #endregion
+
+    public Canvas Canvas { get; private set; } = canvas;
     public Rect DataRect { get; set; }
 
     public Size ScaledControlSize => new(

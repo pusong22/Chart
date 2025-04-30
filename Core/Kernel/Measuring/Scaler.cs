@@ -9,10 +9,14 @@ public class Scaler
 
     private readonly double _valPerPx, _pxPerVal;
 
+    private readonly AxisOrientation _orientation;
+
     public Scaler(CoreCartesianAxis axis, Rect dataRect)
     {
         if (axis.Orientation == AxisOrientation.Unknown)
             throw new Exception("The axis is not ready to be scaled.");
+
+        _orientation = axis.Orientation;
 
         if (axis.Orientation == AxisOrientation.X)
         {
@@ -21,8 +25,8 @@ public class Scaler
         }
         else
         {
-            _minPx = dataRect.X;
-            _maxPx = dataRect.X + dataRect.Width;
+            _minPx = dataRect.Y;
+            _maxPx = dataRect.Y + dataRect.Height;
         }
 
         _deltaPx = _maxPx - _minPx;
@@ -44,11 +48,15 @@ public class Scaler
 
     public float ToPixel(double value)
     {
-        return unchecked(_minPx + (float)((value - _minVal) * _pxPerVal));
+        return _orientation == AxisOrientation.X
+            ? unchecked(_minPx + (float)((value - _minVal) * _pxPerVal))
+            : unchecked(_maxPx - (float)((value - _minVal) * _pxPerVal));
     }
 
     public double ToValue(float pixel)
     {
-        return _minVal + (pixel - _minPx) * _valPerPx;
+        return _orientation == AxisOrientation.X
+            ? _minVal + (pixel - _minPx) * _valPerPx
+            : _maxVal - (pixel - _minPx) * _valPerPx;
     }
 }

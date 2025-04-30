@@ -7,7 +7,6 @@ public abstract class Paint : IDisposable
     public bool IsAntialias { get; set; } = true;
 
     public PaintStyle Style { get; set; }
-    public bool RemoveOnCompleted { get; set; }
 
     public abstract void Initialize(DrawnContext context);
 
