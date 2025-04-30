@@ -1,23 +1,22 @@
-using System.Runtime.CompilerServices;
+using Core.Kernel.Axis;
 using Core.Kernel.Drawing.Geometry;
 using Core.Primitive;
+using System.Runtime.CompilerServices;
 
 namespace Core.Kernel.TickGenerator
 {
-    public class LinearGenerator<TTLabelGeometry>(Func<double, string>? formatLabel)
-        : BaseTickGenerator<TTLabelGeometry>
+    public class LinearGenerator<TTLabelGeometry>(CoreCartesianAxis axis)
+        : BaseTickGenerator<TTLabelGeometry>(axis)
         where TTLabelGeometry : BaseLabelGeometry, new()
     {
         private readonly double[] _divBy10 = [2.0, 2.0, 2.5]; // 静态预定义除数
 
-        public Func<double, string>? FormatLabel { get; set; } = formatLabel;
-
-        public override IEnumerable<Tick> Generate(Bound range, bool vertical, float axisLength)
+        public override void Generate(float axisLength)
         {
-            return GenerateTicks(range, vertical, axisLength, 12f);
+            GenerateTicks(axisLength, 12f);
         }
 
-        private IEnumerable<Tick> GenerateTicks(Bound range, bool vertical, float axisLength, float labelLength)
+        private void GenerateTicks(float axisLength, float labelLength)
         {
             float currentLabelLength = labelLength;
             float maxSize = float.NegativeInfinity;
@@ -27,9 +26,9 @@ namespace Core.Kernel.TickGenerator
             IEnumerable<string> majorLabels;
             do
             {
-                majorPositions = GenerateNumericTickPositions(range, axisLength, currentLabelLength);
+                majorPositions = GenerateNumericTickPositions(axisLength, currentLabelLength);
 
-                majorLabels = MeasuredLabels(majorPositions, vertical, ref maxText, ref maxSize);
+                majorLabels = MeasuredLabels(majorPositions, ref maxText, ref maxSize);
 
                 // 使用预给出的labelLength值重新分配tick
                 if (currentLabelLength < maxSize)
@@ -44,40 +43,39 @@ namespace Core.Kernel.TickGenerator
 
             List<double> majorPositionsList = majorPositions.ToList();
             List<double> minorPositionsList
-                = GenerateMinorPositions(majorPositionsList, range).ToList();
+                = GenerateMinorPositions(majorPositionsList).ToList();
             List<string> majorLabelsList = majorLabels.ToList();
 
-            return CombineTicks(majorPositionsList, majorLabelsList, minorPositionsList);
+            Ticks = CombineTicks(majorPositionsList, majorLabelsList, minorPositionsList);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override string GetPositionLabel(double value)
         {
-            if (FormatLabel != null)
-                return FormatLabel.Invoke(value);
+            if (_formatLabel != null)
+                return _formatLabel.Invoke(value);
 
             return value.ToString();
         }
 
-        private IEnumerable<double> GenerateNumericTickPositions(Bound range,
-            float axisLength, float labelWidth)
+        private IEnumerable<double> GenerateNumericTickPositions(float axisLength, float labelWidth)
         {
-            double idealSpace = GetIdealTickSpace(range, axisLength, labelWidth);
-            double firstTick = range.Minimum / idealSpace * idealSpace;
+            double idealSpace = GetIdealTickSpace(axisLength, labelWidth);
+            double firstTick = _bound.Minimum / idealSpace * idealSpace;
 
-            for (double pos = firstTick; pos <= range.Maximum; pos += idealSpace)
+            for (double pos = firstTick; pos <= _bound.Maximum; pos += idealSpace)
             {
                 yield return pos;
             }
         }
 
-        private double GetIdealTickSpace(Bound range, float axisLength, float labelWidth)
+        private double GetIdealTickSpace(float axisLength, float labelWidth)
         {
             // 通过像素来计算个数
             int targetTickCount = Math.Max(1, (int)(axisLength / labelWidth));
             // 通过实际范围来计算个数
-            double rangeSpan = range.Span;
-            int exponent = (int)Math.Log(range.Span, 10);
+            double rangeSpan = _bound.Span;
+            int exponent = (int)Math.Log(rangeSpan, 10);
             double initialSpace = Math.Pow(10, exponent);
             double neededSpace = CalculateNeededSpace(labelWidth);
 

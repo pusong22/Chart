@@ -10,6 +10,8 @@ public class LabelGeometry : BaseLabelGeometry
     private float _maxTextHeight = 0f;
     private int _lines = 0;
 
+    public bool ShowRect { get; set; }
+
     public override void Draw<TDrawnContext>(TDrawnContext context)
     {
         if (context is not SkiaSharpDrawnContext skContext) return;
@@ -28,15 +30,15 @@ public class LabelGeometry : BaseLabelGeometry
             Typeface = typeface,
         };
 
-        float h = 0f;// -_lines * _maxTextHeight * 0.5f;
-
-        //#if DEBUG
-        //        using var r = new SKPaint { Color = new SKColor(255, 0, 0), Style = SKPaintStyle.Stroke };
-        //using var b = new SKPaint { Color = new SKColor(0, 155, 0), Style = SKPaintStyle.Stroke };
-        //        skContext.Canvas.DrawRect(Xo, Yo - size.Height * 0.5f, size.Width, size.Height, r);
-        //skContext.Canvas.DrawRect(Xo, Yo, size.Width, size.Height, b);
-        //skContext.Canvas.DrawText(Text, Xo, Yo, font, skContext.ActivateSkPaint);
-        //#endif
+        float h = _lines > 1
+                    ? VerticalAlign switch
+                    {
+                        Align.Start => 0f,
+                        Align.Middle => -_lines * _maxTextHeight * 0.5f,
+                        Align.End => -_lines * _maxTextHeight,
+                        _ => 0f
+                    }
+                    : 0f;
 
         foreach (var line in GetLines())
         {
@@ -44,7 +46,32 @@ public class LabelGeometry : BaseLabelGeometry
 
             var xo = GetAlignmentOffset(bound);
 
-            skContext.Canvas.DrawText(line, Xo + xo.X + p.Left, Yo + p.Top + xo.Y + h, font, skContext.ActivateSkPaint);
+            skContext.Canvas.DrawText(line, X + xo.X, Y + xo.Y + h, font, skContext.ActivateSkPaint);
+
+#if DEBUG
+            if (ShowRect)
+            {
+                skContext.ActivateSkPaint.Style = SKPaintStyle.Stroke;
+
+                skContext.Canvas.DrawRect(
+                    X + xo.X,
+                    Y + xo.Y + h - bound.Height,
+                    bound.Width,
+                    bound.Height * LineHeight,
+                    skContext.ActivateSkPaint);
+
+
+                skContext.Canvas.DrawRect(
+                    X + xo.X - p.Left,
+                    Y + xo.Y + h - bound.Height - p.Top,
+                    bound.Width + p.Left + p.Right,
+                    bound.Height * LineHeight + p.Top + p.Bottom,
+                    skContext.ActivateSkPaint);
+
+
+                skContext.ActivateSkPaint.Style = SKPaintStyle.Fill;
+            }
+#endif
 
             h += _maxTextHeight * LineHeight;
         }
@@ -107,10 +134,8 @@ public class LabelGeometry : BaseLabelGeometry
 
     private Point GetAlignmentOffset(SKRect bounds)
     {
-        var p = Padding ?? new Padding(0f);
-
-        var w = bounds.Width + p.Left + p.Right;
-        var h = bounds.Height * LineHeight + p.Top + p.Bottom;
+        var w = bounds.Width;
+        var h = bounds.Height * LineHeight;
 
         float l = -bounds.Left, t = -bounds.Top;
 

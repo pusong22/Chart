@@ -9,8 +9,8 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
 {
     private CoreChart? _coreChart;
 
-    private IEnumerable<CoreAxis>? _xAxes;
-    private IEnumerable<CoreAxis>? _yAxes;
+    private IEnumerable<CoreCartesianAxis>? _xAxes;
+    private IEnumerable<CoreCartesianAxis>? _yAxes;
 
     private CoreDrawnDataArea? _drawnDataArea;
 
@@ -29,7 +29,7 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
         }
     }
 
-    public IEnumerable<CoreAxis>? XAxes
+    public IEnumerable<CoreCartesianAxis>? XAxes
     {
         get => _xAxes;
         set
@@ -38,7 +38,7 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
         }
     }
 
-    public IEnumerable<CoreAxis>? YAxes
+    public IEnumerable<CoreCartesianAxis>? YAxes
     {
         get => _yAxes;
         set

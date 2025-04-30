@@ -27,7 +27,7 @@ public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
         if (drawable.HasTransform)
         {
             Canvas.Save();
-            var p = new SKPoint(drawable.Xo, drawable.Yo);
+            var p = new SKPoint(drawable.X, drawable.Y);
 
             if (drawable.HasRotation)
             {

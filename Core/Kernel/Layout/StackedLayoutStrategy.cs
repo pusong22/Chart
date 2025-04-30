@@ -22,28 +22,30 @@ namespace Core.Kernel.Layout
             {
                 axis.GenerateTick(xaxisLength);
                 var nameSize = axis.MeasureNameLabelSize();
-                var tickLabelSize = axis.MeasureTickLabelSize();
+                var labelSize = axis.MeasureLabelSize();
 
-                var temp = nameSize.Height + tickLabelSize.Height;
+                var temp = nameSize.Height + labelSize.Height;
 
                 // Bottom
                 if (axis.Position == AxisPosition.Start)
                 {
                     if (temp > b) b = temp;
-
+                 
                     axis.NameDesiredRect = new Rect(
                         new Point(0f, chart.ScaledControlSize.Height - nameSize.Height),
                         new Size(chart.ScaledControlSize.Width, nameSize.Height));
                     
                     axis.LabelDesiredRect = new Rect(
-                        new Point(0f, axis.NameDesiredRect.Y - tickLabelSize.Height),
-                        new Size(chart.ScaledControlSize.Width, tickLabelSize.Height));
+                        new Point(0f, axis.NameDesiredRect.Y - labelSize.Height),
+                        new Size(chart.ScaledControlSize.Width, labelSize.Height));
                 }
                 else
                 {
                     if (temp > t) t = temp;
-
                 }
+
+                if (labelSize.Width * 0.5f > l) l = labelSize.Width * 0.5f;
+                if (labelSize.Width * 0.5f > r) r = labelSize.Width * 0.5f;
             }
 
             float yaxisLength = chart.ScaledControlSize.Height / yaxisCount;
@@ -51,9 +53,9 @@ namespace Core.Kernel.Layout
             {
                 axis.GenerateTick(yaxisLength);
                 var nameSize = axis.MeasureNameLabelSize();
-                var tickLabelSize = axis.MeasureTickLabelSize();
+                var labelSize = axis.MeasureLabelSize();
 
-                var temp = nameSize.Width + tickLabelSize.Width;
+                var temp = nameSize.Width + labelSize.Width;
 
                 // Left
                 if (axis.Position == AxisPosition.Start)
@@ -66,25 +68,28 @@ namespace Core.Kernel.Layout
                     
                     axis.LabelDesiredRect = new Rect(
                         new Point(nameSize.Width, 0f),
-                        new Size(tickLabelSize.Width, chart.ScaledControlSize.Height));
+                        new Size(labelSize.Width, chart.ScaledControlSize.Height));
                 }
                 else
                 {
                     if (temp > r) r = temp;
                 }
+
+                if (labelSize.Height * 0.5f > t) t = labelSize.Height * 0.5f;
+                if (labelSize.Height * 0.5f > b) b = labelSize.Height * 0.5f;
             }
 
             float xOffset = 0f, yOffset = 0f;
             foreach (var axis in chart.XAxes)
             {
-                axis.Xo = l + xOffset;
+                axis.X = l + xOffset;
                 if (axis.Position == AxisPosition.Start)
                 {
-                    axis.Yo = chart.ScaledControlSize.Height - b;
+                    axis.Y = chart.ScaledControlSize.Height - b;
                 }
                 else
                 {
-                    axis.Yo = t;
+                    axis.Y = t;
                 }
 
                 axis.Size = xaxisLength;
@@ -94,14 +99,14 @@ namespace Core.Kernel.Layout
 
             foreach (var axis in chart.YAxes)
             {
-                axis.Yo = t + yOffset;
+                axis.Y = t + yOffset;
                 if (axis.Position == AxisPosition.Start)
                 {
-                    axis.Xo = l;
+                    axis.X = l;
                 }
                 else
                 {
-                    axis.Xo = chart.ScaledControlSize.Width - r;
+                    axis.X = chart.ScaledControlSize.Width - r;
                 }
 
                 axis.Size = yaxisLength;

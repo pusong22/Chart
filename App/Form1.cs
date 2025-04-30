@@ -12,16 +12,19 @@ public partial class Form1 : Form
     {
         InitializeComponent();
 
+        SKColor gray = new(169, 169, 169, 169);
+        SKColor red = new(255, 0, 0);
+
         CoreAxis[] xAxes =
         [
             new Axis()
             {
                 LabelPaint = new SolidColorPaint(),
                 NamePaint = new SolidColorPaint(),
-                Name = "TEST1",
+                Name = "X Axis",
                 LabelSize = 12f,
                 NameSize = 12f,
-                NamePadding = new Core.Primitive.Padding(14f)
+                NamePadding = new Core.Primitive.Padding(5f)
             }
         ];
 
@@ -31,18 +34,18 @@ public partial class Form1 : Form
             {
                 LabelPaint = new SolidColorPaint(),
                 NamePaint = new SolidColorPaint(),
-                Name = "TEST1",
+                Name = "Y Axis",
                 LabelSize = 12f,
                 NameSize = 12f,
-                NamePadding = new Core.Primitive.Padding(14f)
+                NamePadding = new Core.Primitive.Padding(5f)
             }
         ];
 
-        //DrawnDataArea area = new()
-        //{
-        //    Fill = new SolidColorPaint(new(60, 60, 60)),
-        //    Stroke = new SolidColorPaint(new(255, 0, 0))
-        //};
+        DrawnDataArea area = new()
+        {
+            Fill = new SolidColorPaint(gray),
+            Stroke = new SolidColorPaint(red)
+        };
 
 
         CartesianChartControl chart = new()
@@ -50,7 +53,7 @@ public partial class Form1 : Form
             Dock = DockStyle.Fill,
             XAxes = xAxes,
             YAxes = yAxes,
-            //CoreDrawnDataArea = area
+            CoreDrawnDataArea = area
         };
 
         Controls.Add(chart);

@@ -1,57 +1,58 @@
-using Core.Kernel.Drawing;
+using Core.Kernel.Axis;
 using Core.Kernel.Drawing.Geometry;
 using Core.Primitive;
 
 namespace Core.Kernel.TickGenerator
 {
-    public abstract class BaseTickGenerator<TTLabelGeometry>
+    public abstract class BaseTickGenerator<TTLabelGeometry>(CoreCartesianAxis axis)
         where TTLabelGeometry : BaseLabelGeometry, new()
     {
-        protected BaseTickGenerator()
-        {
-            MinorCount = 5;
-        }
+        protected Func<double, string>? _formatLabel = axis.Labeler;
+        protected int _minorCount = 5;
+        protected bool _vertical = axis.Orientation == AxisOrientation.Y;
+        protected Bound _bound = new(axis.Min, axis.Max);
 
-        protected int MinorCount { get; set; }
-
-        public Paint? LabelPaint { get; set; }
         public string? MaxLabel { get; protected set; }
+        public IEnumerable<Tick>? Ticks { get; protected set; }
 
-        public abstract IEnumerable<Tick> Generate(Bound range, bool vertical, float axisLength);
+        public abstract void Generate(float axisLength);
 
-        protected IEnumerable<string> MeasuredLabels(IEnumerable<double> positions,
-           bool vertical, ref string maxText, ref float maxSize)
+        protected IEnumerable<string> MeasuredLabels(
+            IEnumerable<double> positions,
+            ref string maxText,
+            ref float maxSize)
         {
-            IEnumerable<string> labels = FormatLabels(positions);
-            foreach (string label in labels)
+            IList<string> labels = [];
+            foreach (double position in positions)
             {
-
+                string label = GetPositionLabel(position);
                 var geometry = new TTLabelGeometry()
                 {
                     Text = label,
-                    TextSize = 12f,
-                    Paint = LabelPaint,
+                    TextSize = axis.LabelSize,
+                    Paint = axis.LabelPaint,
                 };
 
                 Size measuredValue = geometry.Measure();
-                float size;
-                if (vertical)
-                    size = measuredValue.Height;
-                else
-                    size = measuredValue.Width;
+                float size = _vertical
+                    ? measuredValue.Height
+                    : measuredValue.Width;
 
                 if (size > maxSize)
                 {
                     maxSize = size;
                     maxText = label;
                 }
+
+                labels.Add(label);
             }
 
             return labels;
         }
 
         protected IEnumerable<Tick> CombineTicks(
-            IReadOnlyList<double> majorPositions, IReadOnlyList<string> majorLabels,
+            IReadOnlyList<double> majorPositions,
+            IReadOnlyList<string> majorLabels,
             IReadOnlyList<double> minorPositions)
         {
             // 主刻度
@@ -67,8 +68,7 @@ namespace Core.Kernel.TickGenerator
             }
         }
 
-        protected IEnumerable<double> GenerateMinorPositions(
-            IReadOnlyList<double> majorTicks, Bound range)
+        protected IEnumerable<double> GenerateMinorPositions(IReadOnlyList<double> majorTicks)
         {
             if (majorTicks.Count < 2) yield break;
 
@@ -76,9 +76,9 @@ namespace Core.Kernel.TickGenerator
             double minorSpace = majorSpace / 5;
 
             // 生成主刻度之前的次刻度
-            for (double majorPos = majorTicks[0] - majorSpace; majorPos >= range.Minimum; majorPos -= majorSpace)
+            for (double majorPos = majorTicks[0] - majorSpace; majorPos >= _bound.Minimum; majorPos -= majorSpace)
             {
-                foreach (double minorPos in GenerateMinorsForMajor(majorPos, minorSpace, range))
+                foreach (double minorPos in GenerateMinorsForMajor(majorPos, minorSpace, _bound))
                 {
                     yield return minorPos;
                 }
@@ -87,7 +87,7 @@ namespace Core.Kernel.TickGenerator
             // 生成所有主刻度之间的次刻度
             foreach (double majorPos in majorTicks)
             {
-                foreach (double minorPos in GenerateMinorsForMajor(majorPos, minorSpace, range))
+                foreach (double minorPos in GenerateMinorsForMajor(majorPos, minorSpace, _bound))
                 {
                     yield return minorPos;
                 }
@@ -99,19 +99,11 @@ namespace Core.Kernel.TickGenerator
         private IEnumerable<double> GenerateMinorsForMajor(
             double majorPos, double minorSpacing, Bound range)
         {
-            for (int i = 1; i < MinorCount; i++)
+            for (int i = 1; i < _minorCount; i++)
             {
                 double pos = majorPos + minorSpacing * i;
                 if (pos > range.Maximum) yield break;
                 if (pos >= range.Minimum) yield return pos;
-            }
-        }
-
-        private IEnumerable<string> FormatLabels(IEnumerable<double> positions)
-        {
-            foreach (double pos in positions)
-            {
-                yield return GetPositionLabel(pos);
             }
         }
     }

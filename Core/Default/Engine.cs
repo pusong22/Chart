@@ -4,5 +4,5 @@ namespace Core.Default;
 
 public abstract class Engine
 {
-    public abstract CoreAxis GetDefaultCartesianAxis();
+    public abstract CoreCartesianAxis GetDefaultCartesianAxis();
 }

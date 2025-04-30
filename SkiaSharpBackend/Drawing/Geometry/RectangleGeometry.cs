@@ -7,6 +7,6 @@ public class RectangleGeometry : BaseRectangleGeometry
     {
         if (context is not SkiaSharpDrawnContext skContext) return;
 
-        skContext.Canvas.DrawRect(Xo, Yo, Width, Height, skContext.ActivateSkPaint);
+        skContext.Canvas.DrawRect(X, Y, Width, Height, skContext.ActivateSkPaint);
     }
 }

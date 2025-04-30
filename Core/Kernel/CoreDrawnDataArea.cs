@@ -52,8 +52,8 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
             Fill.RemoveOnCompleted = true;
             _fillGeometry ??= new TRectangleGeometry();
 
-            _fillGeometry.Xo = drawLocation.X;
-            _fillGeometry.Yo = drawLocation.Y;
+            _fillGeometry.X = drawLocation.X;
+            _fillGeometry.Y = drawLocation.Y;
             _fillGeometry.Width = drawSize.Width;
             _fillGeometry.Height = drawSize.Height;
 
@@ -65,8 +65,8 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
             Stroke.RemoveOnCompleted = true;
             _strokeGeometry ??= new TRectangleGeometry();
 
-            _strokeGeometry.Xo = drawLocation.X;
-            _strokeGeometry.Yo = drawLocation.Y;
+            _strokeGeometry.X = drawLocation.X;
+            _strokeGeometry.Y = drawLocation.Y;
             _strokeGeometry.Width = drawSize.Width;
             _strokeGeometry.Height = drawSize.Height;
 

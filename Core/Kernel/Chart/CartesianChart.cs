@@ -11,8 +11,8 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas) : CoreChart
     private CoreDrawnDataArea? _previousDrawnDataArea;
     public CoreDrawnDataArea? CoreDrawnDataArea => view.CoreDrawnDataArea;
 
-    public CoreCartesianAxis[] XAxes { get; private set; }
-    public CoreCartesianAxis[] YAxes { get; private set; }
+    public CoreCartesianAxis[]? XAxes { get; private set; }
+    public CoreCartesianAxis[]? YAxes { get; private set; }
     public IEnumerable<CoreCartesianAxis> Axes => XAxes.Concat(YAxes);
 
     protected override void Measure()
@@ -60,18 +60,18 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas) : CoreChart
 
     protected override void Invalidate()
     {
-        //if (_previousDrawnDataArea is not null && CoreDrawnDataArea != _previousDrawnDataArea)
-        //{
-        //    canvas.ReleasePaint(_previousDrawnDataArea.Stroke);
-        //    canvas.ReleasePaint(_previousDrawnDataArea.Fill);
-        //    _previousDrawnDataArea = null;
-        //}
+        if (_previousDrawnDataArea is not null && CoreDrawnDataArea != _previousDrawnDataArea)
+        {
+            canvas.ReleasePaint(_previousDrawnDataArea.Stroke);
+            canvas.ReleasePaint(_previousDrawnDataArea.Fill);
+            _previousDrawnDataArea = null;
+        }
 
-        //if (CoreDrawnDataArea is not null)
-        //{
-        //    CoreDrawnDataArea.Invalidate(this);
-        //    _previousDrawnDataArea = CoreDrawnDataArea;
-        //}
+        if (CoreDrawnDataArea is not null)
+        {
+            CoreDrawnDataArea.Invalidate(this);
+            _previousDrawnDataArea = CoreDrawnDataArea;
+        }
 
         foreach (var axis in Axes)
         {

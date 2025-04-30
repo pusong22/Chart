@@ -5,8 +5,8 @@ public abstract class DrawnGeometry
 {
     private float _rotateTransform;
 
-    public float Xo { get; set; }
-    public float Yo { get; set; }
+    public float X { get; set; }
+    public float Y { get; set; }
 
     public float RotateTransform
     {

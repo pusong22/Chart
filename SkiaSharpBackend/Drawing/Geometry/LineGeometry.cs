@@ -8,6 +8,6 @@ public class LineGeometry : BaseLineGeometry
     {
         if (context is not SkiaSharpDrawnContext skContext) return;
 
-        skContext.Canvas.DrawLine(Xo, Yo, Xo1, Yo1, skContext.ActivateSkPaint);
+        skContext.Canvas.DrawLine(X, Y, X1, Y1, skContext.ActivateSkPaint);
     }
 }
