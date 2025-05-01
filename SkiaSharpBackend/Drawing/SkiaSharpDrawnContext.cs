@@ -37,6 +37,12 @@ public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
             }
         }
 
+        if (drawable.Opacity < 1)
+        {
+            ActivatePaint?.ApplyOpacity(this, drawable.Opacity);
+            ActivatePaint?.RestoreOpacityMask(this);
+        }
+
         drawable.Draw(this);
 
         if (drawable.HasTransform) Canvas.Restore();

@@ -11,4 +11,7 @@ public abstract class Paint : IDisposable
     public abstract void Initialize(DrawnContext context);
 
     public abstract void Dispose();
+
+    public abstract void ApplyOpacity(DrawnContext context, float opacity);
+    public abstract void RestoreOpacityMask(DrawnContext context);
 }

@@ -1,13 +1,18 @@
 using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
+using System.Diagnostics;
 
 namespace Core.Kernel.Chart;
 public class Canvas
 {
     private readonly object _sync = new();
+    private readonly Stopwatch _stopWatch = Stopwatch.StartNew();
 
     private readonly Dictionary<Paint, HashSet<DrawnGeometry>> _paintTask = [];
     public event EventHandler? InvalidatedHandler;
+
+    public bool USE_GPU { get; set; } = true;
+    public bool IsCompleted { get; internal set; }
 
     public void DrawFrame<TDrawnContext>(TDrawnContext context)
         where TDrawnContext : DrawnContext
@@ -15,7 +20,10 @@ public class Canvas
         // 
         lock (_sync)
         {
+            var isValid = true;
             context.BeginDraw();
+
+            var frameTime = _stopWatch.ElapsedMilliseconds;
 
             foreach (var item in _paintTask)
             {
@@ -29,11 +37,17 @@ public class Canvas
                 {
                     if (geometry is null) continue;
 
+                    geometry.CurrentTime = frameTime;
+
+                    isValid = isValid && geometry.IsValid;
+
                     context.Draw(geometry);
                 }
 
                 context.DisposePaint();
             }
+
+            IsCompleted = isValid;
 
             context.EndDraw();
         }

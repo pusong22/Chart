@@ -3,7 +3,6 @@ using Core.Kernel.Drawing;
 using Core.Kernel.Layout;
 using Core.Primitive;
 using Core.View;
-using System.Diagnostics;
 
 namespace Core.Kernel.Chart;
 
@@ -13,8 +12,8 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
     private CoreDrawnDataArea? _previousDrawnDataArea;
     public CoreDrawnDataArea? CoreDrawnDataArea => view.CoreDrawnDataArea;
 
-    public CoreCartesianAxis[]? XAxes { get; private set; }
-    public CoreCartesianAxis[]? YAxes { get; private set; }
+    public CoreCartesianAxis[] XAxes { get; private set; } = [];
+    public CoreCartesianAxis[] YAxes { get; private set; } = [];
     public IEnumerable<CoreCartesianAxis> Axes => XAxes.Concat(YAxes);
 
     protected override void Measure()
@@ -60,6 +59,7 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
     protected override void Invalidate()
     {
         Canvas.ReleasePaint();
+        Canvas.IsCompleted = false;
 
         if (_previousDrawnDataArea is not null && CoreDrawnDataArea != _previousDrawnDataArea)
         {

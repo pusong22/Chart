@@ -1,12 +1,9 @@
 using Core.Kernel.Axis;
-using Core.Kernel.Drawing.Geometry;
 using System.Runtime.CompilerServices;
 
 namespace Core.Kernel.TickGenerator
 {
-    public class LinearGenerator<TTLabelGeometry>(CoreCartesianAxis axis)
-        : BaseTickGenerator<TTLabelGeometry>(axis)
-        where TTLabelGeometry : BaseLabelGeometry, new()
+    public class LinearGenerator(CoreCartesianAxis axis) : BaseTickGenerator(axis)
     {
         private readonly double[] _divBy10 = [2.0, 2.0, 2.5]; // 静态预定义除数
 

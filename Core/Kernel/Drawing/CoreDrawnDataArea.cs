@@ -3,7 +3,7 @@ using Core.Kernel.Drawing.Geometry;
 using Core.Primitive;
 
 namespace Core.Kernel.Drawing;
-public abstract class CoreDrawnDataArea
+public abstract class CoreDrawnDataArea : ChartElement
 {
     private Paint? _fill;
     private Paint? _stroke;
@@ -31,8 +31,6 @@ public abstract class CoreDrawnDataArea
             _stroke.Style = PaintStyle.Stroke;
         }
     }
-
-    public abstract void Invalidate(CoreChart chart);
 }
 
 public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
@@ -48,7 +46,11 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
 
         if (Fill is not null)
         {
-            _fillGeometry ??= new TRectangleGeometry();
+            if (_fillGeometry is null)
+            {
+                _fillGeometry = new TRectangleGeometry();
+                _fillGeometry.Animate(t => t, TimeSpan.FromSeconds(0.3d));
+            }
 
             _fillGeometry.X = drawLocation.X;
             _fillGeometry.Y = drawLocation.Y;
@@ -60,7 +62,11 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
 
         if (Stroke is not null)
         {
-            _strokeGeometry ??= new TRectangleGeometry();
+            if (_strokeGeometry is null)
+            {
+                _strokeGeometry = new TRectangleGeometry();
+                _strokeGeometry.Animate(t => t, TimeSpan.FromSeconds(0.3d));
+            }
 
             _strokeGeometry.X = drawLocation.X;
             _strokeGeometry.Y = drawLocation.Y;

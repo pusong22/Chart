@@ -18,7 +18,6 @@ public class LabelGeometry : BaseLabelGeometry
         if (Paint is null)
             throw new ArgumentNullException(nameof(Paint));
 
-        var p = Padding ?? new Padding(0f);
 
         var size = Measure();
         var skPaint = (SkiaSharpPaint)Paint;
@@ -53,6 +52,8 @@ public class LabelGeometry : BaseLabelGeometry
 #if DEBUG
             if (ShowRect)
             {
+                var p = Padding ?? new Padding(0f);
+
                 skContext.ActivateSkPaint.Style = SKPaintStyle.Stroke;
 
                 skContext.Canvas.DrawRect(
@@ -137,7 +138,7 @@ public class LabelGeometry : BaseLabelGeometry
     private Point GetAlignmentOffset(SKRect bounds)
     {
         var w = bounds.Width;
-        var h = bounds.Height * LineHeight;
+        var h = bounds.Height;
 
         float l = -bounds.Left, t = -bounds.Top;
 

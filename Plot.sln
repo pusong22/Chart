@@ -5,8 +5,6 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plot.WinForm", "Plot.WinForm\Plot.WinForm.csproj", "{1E98396C-B226-48DD-B1CF-F8A21BF46218}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controls", "Controls", "{E808C2E5-20A2-4F5C-9D11-53692A10B9D7}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "App\App.csproj", "{0FD87C88-3F48-43E3-9AC4-55CC168D86AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SkiaSharpBackend", "SkiaSharpBackend\SkiaSharpBackend.csproj", "{3118C547-EBEE-4A66-8A32-B94B4FA7250F}"
@@ -56,9 +54,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218} = {E808C2E5-20A2-4F5C-9D11-53692A10B9D7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0088AE60-3552-4D5D-8F4C-4AEF2514BA47}

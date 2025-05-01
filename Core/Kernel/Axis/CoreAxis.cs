@@ -3,11 +3,12 @@ using Core.Primitive;
 
 namespace Core.Kernel.Axis;
 
-public abstract class CoreAxis
+public abstract class CoreAxis : ChartElement
 {
     public double Min { get; set; } = double.NaN;
     public double Max { get; set; } = double.NaN;
     public string? Name { get; set; }
+    public float NameRotation { get; set; }
     public float NameSize { get; set; }
     public Padding? NamePadding { get; set; }
     public Paint? NamePaint { get; set; }
@@ -22,5 +23,6 @@ public abstract class CoreAxis
     public Rect LabelDesiredRect { get; set; }
 
     public abstract Size MeasureNameLabelSize();
-    public abstract Size MeasureLabelSize();
+    public abstract Size MeasureMaxLabelSize();
+    public abstract Size MeasureLabelSize(string text);
 }

@@ -5,6 +5,7 @@ using SkiaSharpBackend.Drawing;
 namespace Plot.WinForm;
 public partial class CanvasControl : UserControl
 {
+    private bool _invalidating = false;
     public CanvasControl()
     {
         InitializeComponent();
@@ -26,12 +27,28 @@ public partial class CanvasControl : UserControl
 
     private void OnInvalidate(object sender, EventArgs e)
     {
-        _skControl?.Invalidate();
-        _skGLControl?.Invalidate();
+        Loop();
+    }
+
+    private async void Loop()
+    {
+        if (_invalidating) return; // 丢弃一些绘制
+        _invalidating = true;
+
+        var ts = TimeSpan.FromSeconds(1 / 60d);
+
+        while (!Canvas.IsCompleted)
+        {
+            _skControl?.Invalidate();
+            _skGLControl?.Invalidate();
+
+            await Task.Delay(ts);
+        }
+
+        _invalidating = false;
     }
 
     public Canvas Canvas { get; } = new();
-
 
     private void SkControl_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
     {

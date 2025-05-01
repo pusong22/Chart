@@ -37,7 +37,6 @@ public abstract class CoreCartesianAxis : CoreAxis
     }
 
     public abstract void GenerateTick(float axisLength);
-    public abstract void Invalidate(CoreChart chart);
 }
 
 public abstract class CoreCartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCartesianAxis
@@ -46,23 +45,25 @@ public abstract class CoreCartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCa
 {
     private TTLabelGeometry? _nameGeometry;
 
-    private BaseTickGenerator<TTLabelGeometry>? _generator;
+    private BaseTickGenerator? _generator;
 
     public override void Invalidate(CoreChart chart)
     {
         var controlSize = chart.ScaledControlSize;
 
-        var scale = new Scaler(this, chart.DataRect);
+        var scaler = new Scaler(this, NameDesiredRect.Location, NameDesiredRect.Size);
 
         if (Name is not null && NamePaint is not null)
         {
-            _nameGeometry ??= new TTLabelGeometry();
+            if (_nameGeometry is null)
+            {
+                _nameGeometry = new TTLabelGeometry();
+                _nameGeometry.Animate(t => t, TimeSpan.FromSeconds(0.2d));
+            }
             _nameGeometry.Text = Name;
             _nameGeometry.TextSize = NameSize;
             _nameGeometry.Paint = NamePaint;
-            _nameGeometry.RotateTransform = Orientation == AxisOrientation.X
-                    ? 0
-                    : -90;
+            _nameGeometry.RotateTransform = NameRotation;
             _nameGeometry.Padding = NamePadding;
 
             if (Orientation == AxisOrientation.X)
@@ -81,9 +82,9 @@ public abstract class CoreCartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCa
         }
 
         GenerateTick(Orientation == AxisOrientation.X
-            ? chart.DataRect.Width : chart.DataRect.Height);
+            ? NameDesiredRect.Width : NameDesiredRect.Height);
 
-        foreach (var tick in _generator?.Ticks)
+        foreach (var tick in _generator!.Ticks)
         {
             string label = tick.Label;
             double position = tick.Position;
@@ -94,7 +95,7 @@ public abstract class CoreCartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCa
 
             if (Orientation == AxisOrientation.X)
             {
-                x = scale.ToPixel(position);
+                x = scaler.ToPixel(position);
                 y = Position == AxisPosition.Start
                     ? controlSize.Height - Y
                     : Y;
@@ -104,7 +105,7 @@ public abstract class CoreCartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCa
                 x = Position == AxisPosition.Start
                     ? X
                     : controlSize.Width - X;
-                y = scale.ToPixel(position);
+                y = scaler.ToPixel(position);
             }
 
             if (TickPaint is not null)
@@ -167,19 +168,19 @@ public abstract class CoreCartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCa
         if (string.IsNullOrWhiteSpace(Name) || NamePaint is null)
             return new Size(0f, 0f);
 
-        _nameGeometry ??= new TTLabelGeometry();
-        _nameGeometry.Text = Name;
-        _nameGeometry.TextSize = NameSize;
-        _nameGeometry.Paint = NamePaint;
-        _nameGeometry.RotateTransform = Orientation == AxisOrientation.X
-                ? 0
-                : -90;
-        _nameGeometry.Padding = NamePadding;
+        var _nameGeometry = new TTLabelGeometry
+        {
+            Text = Name,
+            TextSize = NameSize,
+            Paint = NamePaint,
+            RotateTransform = NameRotation,
+            Padding = NamePadding
+        };
 
         return _nameGeometry.Measure();
     }
 
-    public override Size MeasureLabelSize()
+    public override Size MeasureMaxLabelSize()
     {
         if (string.IsNullOrWhiteSpace(_generator?.MaxLabel) || LabelPaint is null)
             return new Size(0f, 0f);
@@ -195,13 +196,29 @@ public abstract class CoreCartesianAxis<TTLabelGeometry, TLineGeometry> : CoreCa
         return geometry.Measure();
     }
 
+    public override Size MeasureLabelSize(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text) || LabelPaint is null)
+            return new Size(0f, 0f);
+
+        var geometry = new TTLabelGeometry()
+        {
+            Text = text,
+            TextSize = LabelSize,
+            Paint = LabelPaint,
+            Padding = LabelPadding,
+        };
+
+        return geometry.Measure();
+    }
+
 
     public override void GenerateTick(float axisLength)
     {
         if (LabelPaint is null)
             return;
 
-        _generator ??= new LinearGenerator<TTLabelGeometry>(this);
+        _generator ??= new LinearGenerator(this);
 
         _generator.Generate(axisLength);
     }

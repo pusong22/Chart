@@ -1,11 +1,9 @@
 using Core.Kernel.Axis;
-using Core.Kernel.Drawing.Geometry;
 using Core.Primitive;
 
 namespace Core.Kernel.TickGenerator
 {
-    public abstract class BaseTickGenerator<TTLabelGeometry>(CoreCartesianAxis axis)
-        where TTLabelGeometry : BaseLabelGeometry, new()
+    public abstract class BaseTickGenerator(CoreCartesianAxis axis)
     {
         protected Func<double, string>? _formatLabel = axis.Labeler;
         protected int _minorCount = 5;
@@ -13,7 +11,7 @@ namespace Core.Kernel.TickGenerator
         protected Bound _bound = new(axis.Min, axis.Max);
 
         public string? MaxLabel { get; protected set; }
-        public IEnumerable<Tick>? Ticks { get; protected set; }
+        public IEnumerable<Tick> Ticks { get; protected set; } = [];
 
         public abstract void Generate(float axisLength);
 
@@ -26,14 +24,8 @@ namespace Core.Kernel.TickGenerator
             foreach (double position in positions)
             {
                 string label = GetPositionLabel(position);
-                var geometry = new TTLabelGeometry()
-                {
-                    Text = label,
-                    TextSize = axis.LabelSize,
-                    Paint = axis.LabelPaint,
-                };
 
-                Size measuredValue = geometry.Measure();
+                Size measuredValue = axis.MeasureLabelSize(label);
                 float size = _vertical
                     ? measuredValue.Height
                     : measuredValue.Width;

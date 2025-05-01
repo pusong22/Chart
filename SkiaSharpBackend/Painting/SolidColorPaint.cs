@@ -27,4 +27,28 @@ public class SolidColorPaint(SKColor color) : SkiaSharpPaint
 
         skContext.ActivateSkPaint = _paint;
     }
+
+
+    public override void ApplyOpacity(DrawnContext context, float opacity)
+    {
+        var skContext = (SkiaSharpDrawnContext)context;
+
+        var baseColor = color;
+        _paint ??= new SKPaint();
+
+        _paint.Color =
+            new SKColor(
+                baseColor.Red,
+                baseColor.Green,
+                baseColor.Blue,
+                (byte)(baseColor.Alpha * opacity));
+
+    }
+
+    public override void RestoreOpacityMask(DrawnContext context)
+    {
+        _paint ??= new SKPaint();
+
+        _paint.Color = color;
+    }
 }

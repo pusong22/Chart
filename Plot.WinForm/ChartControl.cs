@@ -1,3 +1,4 @@
+using Core.Kernel.Axis;
 using Core.Kernel.Chart;
 using Core.View;
 using System.ComponentModel;
@@ -5,6 +6,9 @@ using System.ComponentModel;
 namespace Plot.WinForm;
 public abstract partial class ChartControl : UserControl, IChartView
 {
+    private IEnumerable<CoreAxis>? _xAxes;
+    private IEnumerable<CoreAxis>? _yAxes;
+
     protected ChartControl()
     {
         InitializeComponent();
@@ -16,6 +20,26 @@ public abstract partial class ChartControl : UserControl, IChartView
 
     public bool IsDesignMode => DesignMode
         || LicenseManager.UsageMode == LicenseUsageMode.Designtime;
+
+
+    public IEnumerable<CoreAxis>? XAxes
+    {
+        get => _xAxes;
+        set
+        {
+            _xAxes = value;
+        }
+    }
+
+    public IEnumerable<CoreAxis>? YAxes
+    {
+        get => _yAxes;
+        set
+        {
+            _yAxes = value;
+        }
+    }
+
 
     public float DisplayScale
     {
@@ -42,8 +66,10 @@ public abstract partial class ChartControl : UserControl, IChartView
 
     protected override void OnResize(EventArgs e)
     {
-        base.OnResize(e);
+        // 手动调用canvasControl的invalidate
+        //base.OnResize(e);
 
+        _canvasControl.Size = Size;
         CoreChart?.Update();
     }
 }

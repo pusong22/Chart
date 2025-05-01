@@ -5,6 +5,7 @@ namespace Core.Kernel.Drawing;
 public abstract class DrawnContext
 {
     public Paint? ActivatePaint { get; set; }
+
     public virtual void BeginDraw() { }
 
     public virtual void EndDraw() { }

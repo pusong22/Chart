@@ -11,6 +11,10 @@ public class Scaler
 
     private readonly AxisOrientation _orientation;
 
+    public Scaler(CoreCartesianAxis axis, Point p, Size s)
+        : this(axis, new Rect(p, s)) { }
+
+
     public Scaler(CoreCartesianAxis axis, Rect dataRect)
     {
         if (axis.Orientation == AxisOrientation.Unknown)
