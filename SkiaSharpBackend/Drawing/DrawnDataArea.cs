@@ -1,4 +1,4 @@
-using Core.Kernel.Drawing;
+using Core.Kernel;
 using SkiaSharpBackend.Drawing.Geometry;
 
 namespace SkiaSharpBackend.Drawing;

@@ -1,8 +1,10 @@
+using Core.Helper;
 using Core.Kernel.Chart;
 using Core.Kernel.Drawing.Geometry;
+using Core.Kernel.Painting;
 using Core.Primitive;
 
-namespace Core.Kernel.Drawing;
+namespace Core.Kernel;
 public abstract class CoreDrawnDataArea : ChartElement
 {
     private Paint? _fill;
@@ -41,23 +43,22 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
 
     public override void Invalidate(CoreChart chart)
     {
-        var drawLocation = chart.DataRect.Location;
-        var drawSize = chart.DataRect.Size;
+        var location = chart.DrawnLocation;
+        var size = chart.DrawnSize;
 
         if (Fill is not null)
         {
             if (_fillGeometry is null)
             {
                 _fillGeometry = new TRectangleGeometry();
-                _fillGeometry.Animate(t => t, TimeSpan.FromSeconds(0.3d));
+                _fillGeometry.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
+                chart.Canvas.AddDrawnTask(Fill, _fillGeometry);
             }
 
-            _fillGeometry.X = drawLocation.X;
-            _fillGeometry.Y = drawLocation.Y;
-            _fillGeometry.Width = drawSize.Width;
-            _fillGeometry.Height = drawSize.Height;
-
-            chart.Canvas.AddDrawnTask(Fill, _fillGeometry);
+            _fillGeometry.X = location.X;
+            _fillGeometry.Y = location.Y;
+            _fillGeometry.Width = size.Width;
+            _fillGeometry.Height = size.Height;
         }
 
         if (Stroke is not null)
@@ -65,15 +66,14 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
             if (_strokeGeometry is null)
             {
                 _strokeGeometry = new TRectangleGeometry();
-                _strokeGeometry.Animate(t => t, TimeSpan.FromSeconds(0.3d));
+                _strokeGeometry.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
+                chart.Canvas.AddDrawnTask(Stroke, _strokeGeometry);
             }
 
-            _strokeGeometry.X = drawLocation.X;
-            _strokeGeometry.Y = drawLocation.Y;
-            _strokeGeometry.Width = drawSize.Width;
-            _strokeGeometry.Height = drawSize.Height;
-
-            chart.Canvas.AddDrawnTask(Stroke, _strokeGeometry);
+            _strokeGeometry.X = location.X;
+            _strokeGeometry.Y = location.Y;
+            _strokeGeometry.Width = size.Width;
+            _strokeGeometry.Height = size.Height;
         }
     }
 }

@@ -3,8 +3,8 @@ namespace Core.Primitive;
 
 public readonly struct Size(float w, float h)
 {
-    public float Width => w;
-    public float Height => h;
+    public float Width { get; } = w;
+    public float Height { get; } = h;
 
     public Size GetRotatedSize(float degrees)
     {
@@ -24,12 +24,5 @@ public readonly struct Size(float w, float h)
         var h = (float)(Math.Sin(rRadians) * Width + Math.Cos(rRadians) * Height);
 
         return new(w, h);
-    }
-
-    public static Size operator +(Size a, Size b)
-    {
-        return new Size(
-            a.Width + b.Width,
-            a.Height + b.Height);
     }
 }

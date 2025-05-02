@@ -1,3 +1,4 @@
+using Core.Helper;
 using Core.Kernel.Chart;
 using SkiaSharp.Views.Desktop;
 using SkiaSharpBackend.Drawing;
@@ -10,6 +11,8 @@ public partial class CanvasControl : UserControl
     {
         InitializeComponent();
     }
+
+    public Canvas Canvas { get; } = new();
 
     protected override void OnHandleCreated(EventArgs e)
     {
@@ -35,7 +38,7 @@ public partial class CanvasControl : UserControl
         if (_invalidating) return; // 丢弃一些绘制
         _invalidating = true;
 
-        var ts = TimeSpan.FromSeconds(1 / 60d);
+        var ts = TimeSpan.FromSeconds(1 / ChartConfig.MaxFPS);
 
         while (!Canvas.IsCompleted)
         {
@@ -48,14 +51,11 @@ public partial class CanvasControl : UserControl
         _invalidating = false;
     }
 
-    public Canvas Canvas { get; } = new();
-
     private void SkControl_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
     {
         var context = new SkiaSharpDrawnContext(e.Surface, e.Info);
         Canvas.DrawFrame(context);
     }
-
 
     private void SkglControl_PaintSurface(object sender, SKPaintGLSurfaceEventArgs e)
     {

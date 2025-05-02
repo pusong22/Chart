@@ -1,10 +1,28 @@
+using Core.Kernel.Motion;
 using Core.Primitive;
 
 namespace Core.Kernel.Drawing.Geometry;
 public abstract class BaseLineGeometry : DrawnGeometry
 {
-    public float X1 { get; set; }
-    public float Y1 { get; set; }
+    private readonly FloatMotionProperty _x1Property;
+    private readonly FloatMotionProperty _y1Property;
+
+    protected BaseLineGeometry()
+    {
+        _x1Property = RegisterMotionProperty(new FloatMotionProperty(nameof(X1), 0f));
+        _y1Property = RegisterMotionProperty(new FloatMotionProperty(nameof(Y1), 0f));
+    }
+
+    public float X1
+    {
+        get => _x1Property.Get(this);
+        protected internal set => _x1Property.Set(value, this);
+    }
+    public float Y1
+    {
+        get => _y1Property.Get(this);
+        protected internal set => _y1Property.Set(value, this);
+    }
 
     public override Size Measure()
     {

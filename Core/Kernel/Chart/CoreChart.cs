@@ -1,21 +1,18 @@
+using Core.Kernel.View;
 using Core.Primitive;
-using Core.View;
 
 namespace Core.Kernel.Chart;
 public abstract class CoreChart(IChartView view, Canvas canvas)
 {
     private readonly object _sync = new();
 
-    #region Configure
-    public bool EnableLog { get; set; } = false;
-    #endregion
-
-    public Canvas Canvas { get; private set; } = canvas;
+    public Canvas Canvas { get; } = canvas;
     public Rect DataRect { get; set; }
+    public Point DrawnLocation { get; set; }
+    public Size DrawnSize { get; set; }
 
-    public Size ScaledControlSize => new(
-        view.ControlSize.Width / view.DisplayScale,
-        view.ControlSize.Height / view.DisplayScale);
+    public Size ControlSize { get => view.ControlSize; }
+
 
     protected abstract void Measure();
     protected abstract void Invalidate();

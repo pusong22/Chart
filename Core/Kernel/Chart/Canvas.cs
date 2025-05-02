@@ -1,5 +1,6 @@
 using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
+using Core.Kernel.Painting;
 using System.Diagnostics;
 
 namespace Core.Kernel.Chart;
@@ -11,7 +12,6 @@ public class Canvas
     private readonly Dictionary<Paint, HashSet<DrawnGeometry>> _paintTask = [];
     public event EventHandler? InvalidatedHandler;
 
-    public bool USE_GPU { get; set; } = true;
     public bool IsCompleted { get; internal set; }
 
     public void DrawFrame<TDrawnContext>(TDrawnContext context)
@@ -20,12 +20,14 @@ public class Canvas
         // 
         lock (_sync)
         {
-            var isValid = true;
+            var isCompleted = true;
+
+            var removeTask = new List<Tuple<Paint, DrawnGeometry>>();
             context.BeginDraw();
 
             var frameTime = _stopWatch.ElapsedMilliseconds;
 
-            foreach (var item in _paintTask)
+            foreach (var item in _paintTask.OrderBy(x => x.Key.ZIndex))
             {
                 var paint = item.Key;
 
@@ -39,7 +41,10 @@ public class Canvas
 
                     geometry.CurrentTime = frameTime;
 
-                    isValid = isValid && geometry.IsValid;
+                    isCompleted = isCompleted && geometry.IsCompleted;
+
+                    if (geometry.Remove)
+                        removeTask.Add(new Tuple<Paint, DrawnGeometry>(paint, geometry));
 
                     context.Draw(geometry);
                 }
@@ -47,7 +52,14 @@ public class Canvas
                 context.DisposePaint();
             }
 
-            IsCompleted = isValid;
+            foreach (var item in removeTask)
+            {
+                _ = _paintTask[item.Item1].Remove(item.Item2);
+
+                isCompleted = false;
+            }
+
+            IsCompleted = isCompleted;
 
             context.EndDraw();
         }
@@ -55,47 +67,17 @@ public class Canvas
 
     public void AddDrawnTask(Paint paint, DrawnGeometry geometry)
     {
-        if (_paintTask.TryGetValue(paint, out var g))
-        {
-            _ = g.Add(geometry);
-        }
-        else
+        if (!_paintTask.TryGetValue(paint, out var g))
         {
             g = [];
-            _ = g.Add(geometry);
-
-            _paintTask[paint] = g;
+            _paintTask.Add(paint, g);
         }
+
+        g.Add(geometry);
     }
 
     public void Invalidate()
     {
         InvalidatedHandler?.Invoke(this, null);
-    }
-
-    public void ReleasePaint()
-    {
-        _paintTask.Clear();
-    }
-
-    public void ReleasePaint(Paint? paint)
-    {
-        if (paint is null) return;
-
-        _paintTask[paint].Clear();
-        _paintTask.Remove(paint);
-    }
-
-    public void ReleasePaint(IEnumerable<Paint?>? paints)
-    {
-        if (paints is null) return;
-
-        foreach (var item in paints)
-        {
-            if (item is null) continue;
-
-            _paintTask[item].Clear();
-            _paintTask.Remove(item);
-        }
     }
 }

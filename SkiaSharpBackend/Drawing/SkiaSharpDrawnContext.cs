@@ -1,5 +1,7 @@
 using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
+using Core.Kernel.Painting;
+using Core.Primitive;
 using SkiaSharp;
 
 namespace SkiaSharpBackend.Drawing;
@@ -8,7 +10,8 @@ public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
 {
     public SKCanvas Canvas { get; } = surface.Canvas;
     public SKImageInfo Info { get; } = info;
-    public SKPaint? ActivateSkPaint { get; set; }
+    public SKPaint? ActivateSkPaint { get; protected internal set; }
+    public SKFont? ActivateSkFont { get; protected internal set; }
 
     public override void BeginDraw()
     {
@@ -24,40 +27,71 @@ public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
 
     public override void Draw(DrawnGeometry drawable)
     {
-        if (drawable.HasTransform)
-        {
-            Canvas.Save();
-            var p = new SKPoint(drawable.X, drawable.Y);
+        Canvas.Save();
 
-            if (drawable.HasRotation)
-            {
-                Canvas.Translate(p.X, p.Y);
-                Canvas.RotateDegrees(drawable.RotateTransform);
-                Canvas.Translate(-p.X, -p.Y);
-            }
+        var p = new SKPoint(drawable.X, drawable.Y);
+
+        if (drawable.HasRotation)
+        {
+            // 先更新旋转起点，然在更新绘制起点
+            Canvas.Translate(p.X, p.Y);
+            Canvas.RotateDegrees(drawable.RotateTransform);
+            Canvas.Translate(-p.X, -p.Y);
         }
 
-        if (drawable.Opacity < 1)
-        {
-            ActivatePaint?.ApplyOpacity(this, drawable.Opacity);
-            ActivatePaint?.RestoreOpacityMask(this);
-        }
+        ActivateSkPaint!.Color =
+            ActivateSkPaint.Color.WithAlpha((byte)(255 * drawable.Opacity));
+
 
         drawable.Draw(this);
 
-        if (drawable.HasTransform) Canvas.Restore();
+        Canvas.Restore();
     }
 
     public override void DisposePaint()
     {
-        ActivatePaint?.Dispose();
-        ActivatePaint = null;
+        ActivateSkPaint?.Dispose();
+        ActivateSkFont?.Dispose();
+
         ActivateSkPaint = null;
+        ActivateSkFont = null;
     }
 
     public override void InitializePaint(Paint paint)
     {
-        ActivatePaint = paint;
-        paint.Initialize(this);
+        ActivateSkPaint ??= new SKPaint();
+
+        ActivateSkPaint.Color = paint.ToSKColor();
+        ActivateSkPaint.IsAntialias = paint.IsAntialias;
+
+        ActivateSkPaint.Style = paint.ToSKStyle();
+
+        ActivateSkPaint.PathEffect = paint.ToSKPathEffect();
+
+        ActivateSkFont ??= new SKFont();
+
+        ActivateSkFont.Typeface = paint.ToSKTypeface();
+    }
+
+    public override Rect MeasureText(string text)
+    {
+        ActivateSkFont!.MeasureText(text, out var bound, ActivateSkPaint!);
+
+        return new Rect(new Point(bound.Left, bound.Top), new Size(bound.Width, bound.Height));
+    }
+
+    public override void DrawRect(Rect rect)
+    {
+        Canvas.DrawRect(rect.ToSKRect(), ActivateSkPaint!);
+    }
+
+    public override void DrawText(string text, Point p)
+    {
+        Canvas.DrawText(text, p.ToSKPoint(), ActivateSkFont!, ActivateSkPaint!);
+    }
+
+    public override void DrawLine(Point p1, Point p2)
+    {
+        Canvas.DrawLine(p1.ToSKPoint(), p2.ToSKPoint(), ActivateSkPaint!);
     }
 }

@@ -1,4 +1,3 @@
-using Core.Kernel.Axis;
 using Core.Kernel.Chart;
 using Core.Primitive;
 
@@ -6,7 +5,7 @@ namespace Core.Kernel.Layout
 {
     public class StackedLayoutStrategy(CartesianChart chart) : BaseLayoutStrategy
     {
-        public override Rect CalculateLayout()
+        public override void CalculateLayout()
         {
             float l = 0f,
                 t = 0f,
@@ -16,24 +15,21 @@ namespace Core.Kernel.Layout
             int xaxisCount = chart.XAxes.Length;
             int yaxisCount = chart.YAxes.Length;
 
-            var cached = new Dictionary<CoreCartesianAxis, (Size, Size)>();
-            float axisBetweenPx = 5f;
+            Size xmaxNameSize = new(0f, 0f);
+            Size xmaxLabelSize = new(0f, 0f);
+
+            Size ymaxNameSize = new(0f, 0f);
+            Size ymaxLabelSize = new(0f, 0f);
+
             float xAxisBetweenPx = 0f;
             float yAxisBetweenPx = 0f;
-            float subXPx = (xaxisCount - 1) * axisBetweenPx;
-            float subYPx = (yaxisCount - 1) * axisBetweenPx;
 
-            float totalXPx = chart.ScaledControlSize.Width - subXPx;
-            float totalYPx = chart.ScaledControlSize.Height - subYPx;
-
-            float xaxisLength = totalXPx / xaxisCount;
             for (int i = 0; i < xaxisCount; i++)
             {
                 var axis = chart.XAxes[i];
 
-                axis.GenerateTick(xaxisLength);
                 var nameSize = axis.MeasureNameLabelSize();
-                var labelSize = axis.MeasureMaxLabelSize();
+                var labelSize = axis.MeasureLabelSize(chart.ControlSize);
 
                 var temp = nameSize.Height + labelSize.Height;
 
@@ -42,7 +38,8 @@ namespace Core.Kernel.Layout
                 if (labelSize.Width * 0.5f > xAxisBetweenPx)
                     xAxisBetweenPx = labelSize.Width * 0.5f;
 
-                cached[axis] = (nameSize, labelSize);
+                if (nameSize.Height > xmaxNameSize.Height) xmaxNameSize = nameSize;
+                if (labelSize.Height > xmaxLabelSize.Height) xmaxLabelSize = labelSize;
 
                 // Bottom
                 if (axis.Position == AxisPosition.Start)
@@ -53,18 +50,14 @@ namespace Core.Kernel.Layout
                 {
                     if (temp > t) t = temp;
                 }
-
-                axis.Y = nameSize.Height + labelSize.Height * 0.5f;
             }
 
-            float yaxisLength = totalYPx / yaxisCount;
             for (int i = 0; i < yaxisCount; i++)
             {
                 var axis = chart.YAxes[i];
 
-                axis.GenerateTick(yaxisLength);
                 var nameSize = axis.MeasureNameLabelSize();
-                var labelSize = axis.MeasureMaxLabelSize();
+                var labelSize = axis.MeasureLabelSize(chart.ControlSize);
 
                 var temp = nameSize.Width + labelSize.Width;
 
@@ -73,7 +66,8 @@ namespace Core.Kernel.Layout
                 if (labelSize.Height * 0.5f > yAxisBetweenPx)
                     yAxisBetweenPx = labelSize.Height * 0.5f;
 
-                cached[axis] = (nameSize, labelSize);
+                if (nameSize.Width > ymaxNameSize.Width) ymaxNameSize = nameSize;
+                if (labelSize.Width > ymaxLabelSize.Width) ymaxLabelSize = labelSize;
 
                 // Left
                 if (axis.Position == AxisPosition.Start)
@@ -84,32 +78,30 @@ namespace Core.Kernel.Layout
                 {
                     if (temp > r) r = temp;
                 }
-
-                axis.X = nameSize.Width + labelSize.Width * 0.5f;
             }
 
             Point location = new(l, t);
             Size size = new(
-                chart.ScaledControlSize.Width - r - l,
-                chart.ScaledControlSize.Height - b - t);
+                chart.ControlSize.Width - r - l,
+                chart.ControlSize.Height - b - t);
 
-            subXPx = (xaxisCount - 1) * xAxisBetweenPx;
-            subYPx = (yaxisCount - 1) * yAxisBetweenPx;
+            float subXPx = (xaxisCount - 1) * xAxisBetweenPx;
+            float subYPx = (yaxisCount - 1) * yAxisBetweenPx;
 
             float xOffset = l;
-            xaxisLength = (size.Width - subXPx) / xaxisCount;
+            float xaxisLength = (size.Width - subXPx) / xaxisCount;
             foreach (var axis in chart.XAxes)
             {
                 // Bottom
                 if (axis.Position == AxisPosition.Start)
                 {
                     axis.NameDesiredRect = new Rect(
-                        new Point(xOffset, chart.ScaledControlSize.Height - cached[axis].Item1.Height),
-                        new Size(xaxisLength, cached[axis].Item1.Height));
+                        new Point(xOffset, chart.ControlSize.Height - xmaxNameSize.Height),
+                        new Size(xaxisLength, xmaxNameSize.Height));
 
                     axis.LabelDesiredRect = new Rect(
-                        new Point(xOffset, axis.NameDesiredRect.Y - cached[axis].Item2.Height),
-                        new Size(xaxisLength, cached[axis].Item2.Height));
+                        new Point(xOffset, axis.NameDesiredRect.Y - xmaxLabelSize.Height),
+                        new Size(xaxisLength, xmaxLabelSize.Height));
                 }
                 else
                 {
@@ -117,11 +109,13 @@ namespace Core.Kernel.Layout
                 }
 
                 xOffset += xaxisLength + xAxisBetweenPx;
+
+                axis.Y = xmaxNameSize.Height + xmaxLabelSize.Height * 0.5f;
             }
 
 
             float yOffset = t;
-            yaxisLength = (size.Height - subYPx) / yaxisCount;
+            float yaxisLength = (size.Height - subYPx) / yaxisCount;
             foreach (var axis in chart.YAxes)
             {
                 // Left
@@ -129,11 +123,11 @@ namespace Core.Kernel.Layout
                 {
                     axis.NameDesiredRect = new Rect(
                         new Point(0f, yOffset),
-                        new Size(cached[axis].Item1.Width, yaxisLength));
+                        new Size(ymaxNameSize.Width, yaxisLength));
 
                     axis.LabelDesiredRect = new Rect(
-                        new Point(cached[axis].Item1.Width, yOffset),
-                        new Size(cached[axis].Item2.Width, yaxisLength));
+                        new Point(ymaxNameSize.Width, yOffset),
+                        new Size(ymaxLabelSize.Width, yaxisLength));
                 }
                 else
                 {
@@ -141,10 +135,12 @@ namespace Core.Kernel.Layout
                 }
 
                 yOffset += yaxisLength + yAxisBetweenPx;
+
+                axis.X = ymaxNameSize.Width + ymaxLabelSize.Width * 0.5f;
             }
 
-
-            return new(location, size);
+            chart.DrawnLocation = location;
+            chart.DrawnSize = size;
         }
     }
 }

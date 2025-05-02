@@ -1,9 +1,6 @@
-using Core.Kernel.Axis;
+using Core.Kernel.Painting;
 using Plot.WinForm;
-using SkiaSharp;
-using SkiaSharpBackend;
 using SkiaSharpBackend.Drawing;
-using SkiaSharpBackend.Painting;
 
 namespace App;
 
@@ -13,51 +10,33 @@ public partial class Form1 : Form
     {
         InitializeComponent();
 
-        SKColor gray = new(169, 169, 169, 169);
-        SKColor red = new(255, 0, 0);
-
-        CoreCartesianAxis[] xAxes =
-        [
-            new Axis()
-            {
-                LabelPaint = new SolidColorPaint(),
-                NamePaint = new SolidColorPaint(),
-                TickPaint = new SolidColorPaint(),
-                Name = "X Axis",
-                LabelSize = 12f,
-                NameSize = 12f,
-                NamePadding = new Core.Primitive.Padding(5f),
-                LabelPadding = new Core.Primitive.Padding(15f),
-            }
-        ];
-
-        CoreCartesianAxis[] yAxes =
-        [
-            new Axis()
-            {
-                LabelPaint = new SolidColorPaint(),
-                NamePaint = new SolidColorPaint(),
-                TickPaint = new SolidColorPaint(),
-                Name = "Y Axis",
-                LabelSize = 12f,
-                NameSize = 12f,
-                NamePadding = new Core.Primitive.Padding(5f),
-                LabelPadding = new Core.Primitive.Padding(15f),
-            }
-        ];
+        Core.Primitive.Color gray = new(169, 169, 169, 169);
+        Core.Primitive.Color red = new(255, 0, 0);
 
         DrawnDataArea area = new()
         {
-            Fill = new SolidColorPaint(gray),
-            Stroke = new SolidColorPaint(red)
+            Fill = new Paint() { Color = gray },
+            Stroke = new Paint() { Color = red },
         };
 
 
         CartesianChartControl chart = new()
         {
             Dock = DockStyle.Fill,
-            XAxes = xAxes,
-            YAxes = yAxes,
+            XAxes = [new Axis() { Name = "X Axis", ShowSeparatorLine = false, DrawTickPath = false, }],
+            YAxes = [
+                new Axis() { Name = "Y Axis1", ShowSeparatorLine = false, DrawTickPath = false, },
+                //new Axis() { Name = "Y Axis2"},
+                //new Axis() { Name = "Y Axis3"},
+                //new Axis() { Name = "Y Axis4"},
+                //new Axis() { Name = "Y Axis5"},
+                //new Axis() { Name = "Y Axis6"},
+                //new Axis() { Name = "Y Axis7"},
+                //new Axis() { Name = "Y Axis8"},
+                //new Axis() { Name = "Y Axis9"},
+                //new Axis() { Name = "Y Axis10"},
+                //new Axis() { Name = "Y Axis11"},
+            ],
             CoreDrawnDataArea = area
         };
 

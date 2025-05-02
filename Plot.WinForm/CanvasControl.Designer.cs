@@ -1,3 +1,4 @@
+using Core.Helper;
 using SkiaSharp.Views.Desktop;
 
 namespace Plot.WinForm;
@@ -33,7 +34,7 @@ partial class CanvasControl
 
         this.SuspendLayout();
 
-        if (Canvas.USE_GPU)
+        if (ChartConfig.USE_GPU)
         {
             _skGLControl = new SKGLControl();
             _skGLControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;

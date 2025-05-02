@@ -2,6 +2,9 @@ namespace Core.Primitive;
 
 public readonly struct Rect(Point p, Size s)
 {
+    public Rect(float x, float y, float width, float height)
+        : this(new Point(x, y), new Size(width, height)) { }
+
     public float X { get; } = p.X;
     public float Y { get; } = p.Y;
 

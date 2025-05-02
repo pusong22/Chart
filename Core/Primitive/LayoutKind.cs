@@ -1,7 +1,6 @@
 namespace Core.Primitive;
 
-public enum ElementLayoutKind
+public enum LayoutKind
 {
     Stack,
-    Flow
 }

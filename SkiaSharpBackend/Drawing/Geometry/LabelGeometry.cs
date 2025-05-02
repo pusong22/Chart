@@ -1,8 +1,6 @@
-using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
 using Core.Primitive;
 using SkiaSharp;
-using SkiaSharpBackend.Painting;
 
 namespace SkiaSharpBackend.Drawing.Geometry;
 public class LabelGeometry : BaseLabelGeometry
@@ -14,20 +12,7 @@ public class LabelGeometry : BaseLabelGeometry
 
     public override void Draw<TDrawnContext>(TDrawnContext context)
     {
-        if (context is not SkiaSharpDrawnContext skContext) return;
-        if (Paint is null)
-            throw new ArgumentNullException(nameof(Paint));
-
-
         var size = Measure();
-        var skPaint = (SkiaSharpPaint)Paint;
-        var typeface = skPaint.GetSKTypeface();
-
-        using var font = new SKFont
-        {
-            Size = TextSize,
-            Typeface = typeface,
-        };
 
         // 因为是每次画一行，初始化的x,y是中心点，经测试发现skia字体逻辑是
         // Align.Left, Align.Bottom，
@@ -43,36 +28,27 @@ public class LabelGeometry : BaseLabelGeometry
 
         foreach (var line in GetLines())
         {
-            font.MeasureText(line, out var bound, skContext.ActivateSkPaint);
+            var bound = context.MeasureText(line);
 
             var xo = GetAlignmentOffset(bound);
 
-            skContext.Canvas.DrawText(line, X + xo.X, Y + xo.Y + h, font, skContext.ActivateSkPaint);
+            context.DrawText(line, new Point(X + xo.X, Y + xo.Y + h));
 
 #if DEBUG
             if (ShowRect)
             {
                 var p = Padding ?? new Padding(0f);
 
-                skContext.ActivateSkPaint.Style = SKPaintStyle.Stroke;
-
-                skContext.Canvas.DrawRect(
+                context.DrawRect(new Rect(
                     X + xo.X,
-                    Y + xo.Y + h - bound.Height,
-                    bound.Width,
-                    bound.Height * LineHeight,
-                    skContext.ActivateSkPaint);
+                    Y + xo.Y + h - bound.Height, bound.Width,
+                    bound.Height * LineHeight));
 
-
-                skContext.Canvas.DrawRect(
+                context.DrawRect(new Rect(
                     X + xo.X - p.Left,
                     Y + xo.Y + h - bound.Height - p.Top,
                     bound.Width + p.Left + p.Right,
-                    bound.Height * LineHeight + p.Top + p.Bottom,
-                    skContext.ActivateSkPaint);
-
-
-                skContext.ActivateSkPaint.Style = SKPaintStyle.Fill;
+                    bound.Height * LineHeight + p.Top + p.Bottom));
             }
 #endif
 
@@ -85,18 +61,10 @@ public class LabelGeometry : BaseLabelGeometry
         if (Paint is null)
             throw new ArgumentNullException(nameof(Paint));
 
-        var skPaint = (SkiaSharpPaint)Paint;
-        var typeface = skPaint.GetSKTypeface();
-
         using var font = new SKFont
         {
             Size = TextSize,
-            Typeface = typeface
-        };
-
-        using var p = new SKPaint
-        {
-            IsAntialias = Paint.IsAntialias
+            Typeface = Paint.ToSKTypeface()
         };
 
         var w = 0f;
@@ -105,7 +73,7 @@ public class LabelGeometry : BaseLabelGeometry
 
         foreach (var line in GetLines())
         {
-            font.MeasureText(line, out var bound, p);
+            font.MeasureText(line, out var bound);
 
             if (bound.Width > w) w = bound.Width;
             if (bound.Height > _maxTextHeight) _maxTextHeight = bound.Height;
@@ -135,12 +103,12 @@ public class LabelGeometry : BaseLabelGeometry
     }
 
 
-    private Point GetAlignmentOffset(SKRect bounds)
+    private Point GetAlignmentOffset(Rect bounds)
     {
         var w = bounds.Width;
         var h = bounds.Height;
 
-        float l = -bounds.Left, t = -bounds.Top;
+        float l = -bounds.X, t = -bounds.Y;
 
         switch (VerticalAlign)
         {

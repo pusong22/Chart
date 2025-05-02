@@ -2,7 +2,9 @@ namespace Core.Kernel.Motion;
 
 public abstract class Animatable
 {
-    public bool IsValid
+    public bool Remove { get; protected internal set; }
+
+    public bool IsCompleted
     {
         get
         {
@@ -25,9 +27,9 @@ public abstract class Animatable
         }
     }
 
-    public long CurrentTime { get; set; } = long.MaxValue;
+    public long CurrentTime { get; protected internal set; } = long.MaxValue;
 
-    public Dictionary<string, IMotionProperty> Motions { get; set; } = [];
+    public Dictionary<string, IMotionProperty> Motions { get; protected internal set; } = [];
 
     public void SetMotion(Animation? animation, params string[]? propertyName)
     {

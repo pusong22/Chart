@@ -1,15 +1,14 @@
+using Core.Helper;
 using Core.Kernel.Axis;
-using Core.Kernel.Drawing;
 using Core.Kernel.Layout;
+using Core.Kernel.View;
 using Core.Primitive;
-using Core.View;
 
 namespace Core.Kernel.Chart;
 
 public class CartesianChart(ICartesianChartView view, Canvas canvas)
     : CoreChart(view, canvas)
 {
-    private CoreDrawnDataArea? _previousDrawnDataArea;
     public CoreDrawnDataArea? CoreDrawnDataArea => view.CoreDrawnDataArea;
 
     public CoreCartesianAxis[] XAxes { get; private set; } = [];
@@ -18,12 +17,22 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
 
     protected override void Measure()
     {
+#if DEBUG
+        if (ChartConfig.EnableLog)
+        {
+
+        }
+#endif
         var x = view.XAxes;
         var y = view.YAxes;
 
+        var instance = ChartConfig.Instance;
+
         if (x is null || x.Count() == 0 || y is null || y.Count() == 0)
         {
-            throw new Exception($"{nameof(XAxes)} and {nameof(YAxes)} must contain at least one element.");
+            var provider = instance.GetProvider();
+            x = [provider.GetAxis()];
+            y = [provider.GetAxis()];
         }
 
         XAxes = x.Cast<CoreCartesianAxis>().ToArray();
@@ -34,45 +43,43 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
             throw new Exception($"{nameof(XAxes)} and {nameof(YAxes)} must contain at least one element.");
         }
 
-        // 初始化XAxes和YAxes的min/max，以及属性设置
         foreach (var axis in XAxes)
         {
+            if (instance != axis.Tag)
+            {
+                instance.ApplyStyleToAxis(axis);
+                axis.Tag = instance;
+            }
+
             axis.Reset(AxisOrientation.X);
         }
 
         foreach (var axis in YAxes)
         {
+            if (instance != axis.Tag)
+            {
+                instance.ApplyStyleToAxis(axis);
+                axis.Tag = instance;
+            }
+
             axis.Reset(AxisOrientation.Y);
         }
 
 
-        BaseLayoutStrategy layoutStrategy = view.ElementLayoutKind switch
+        BaseLayoutStrategy layoutStrategy = view.LayoutKind switch
         {
-            ElementLayoutKind.Stack => new StackedLayoutStrategy(this),
-            ElementLayoutKind.Flow => throw new NotImplementedException(),
+            LayoutKind.Stack => new StackedLayoutStrategy(this),
             _ => throw new NotImplementedException(),
         };
 
-        DataRect = layoutStrategy.CalculateLayout();
+        layoutStrategy.CalculateLayout();
     }
 
     protected override void Invalidate()
     {
-        Canvas.ReleasePaint();
         Canvas.IsCompleted = false;
 
-        if (_previousDrawnDataArea is not null && CoreDrawnDataArea != _previousDrawnDataArea)
-        {
-            Canvas.ReleasePaint(_previousDrawnDataArea.Stroke);
-            Canvas.ReleasePaint(_previousDrawnDataArea.Fill);
-            _previousDrawnDataArea = null;
-        }
-
-        if (CoreDrawnDataArea is not null)
-        {
-            CoreDrawnDataArea.Invalidate(this);
-            _previousDrawnDataArea = CoreDrawnDataArea;
-        }
+        CoreDrawnDataArea?.Invalidate(this);
 
         foreach (var axis in Axes)
         {

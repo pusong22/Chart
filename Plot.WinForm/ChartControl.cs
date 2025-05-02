@@ -1,7 +1,8 @@
+using Core.Helper;
 using Core.Kernel.Axis;
 using Core.Kernel.Chart;
-using Core.View;
-using System.ComponentModel;
+using Core.Kernel.View;
+using SkiaSharpBackend;
 
 namespace Plot.WinForm;
 public abstract partial class ChartControl : UserControl, IChartView
@@ -12,15 +13,21 @@ public abstract partial class ChartControl : UserControl, IChartView
     protected ChartControl()
     {
         InitializeComponent();
+
+        ChartConfig.Configure(config => config.UseDefault());
     }
 
     protected abstract CoreChart? CoreChart { get; }
 
-    public Core.Primitive.Size ControlSize => new(ClientSize.Width, ClientSize.Height);
-
-    public bool IsDesignMode => DesignMode
-        || LicenseManager.UsageMode == LicenseUsageMode.Designtime;
-
+    public Core.Primitive.Size ControlSize
+    {
+        get
+        {
+            using var g = CreateGraphics();
+            float scale = g.DpiX / 96f;
+            return new(ClientSize.Width / scale, ClientSize.Height / scale);
+        }
+    }
 
     public IEnumerable<CoreAxis>? XAxes
     {
@@ -40,22 +47,11 @@ public abstract partial class ChartControl : UserControl, IChartView
         }
     }
 
-
-    public float DisplayScale
-    {
-        get
-        {
-            using Graphics g = CreateGraphics();
-            return g.DpiX / 96f;
-        }
-    }
-
     public void InvokeUIThread(Action action)
     {
         if (!IsHandleCreated) return;
         _ = BeginInvoke(action);
     }
-
 
     protected override void OnLoad(EventArgs e)
     {
@@ -67,9 +63,9 @@ public abstract partial class ChartControl : UserControl, IChartView
     protected override void OnResize(EventArgs e)
     {
         // 手动调用canvasControl的invalidate
-        //base.OnResize(e);
+        base.OnResize(e);
 
-        _canvasControl.Size = Size;
+        //_canvasControl.Size = Size;
         CoreChart?.Update();
     }
 }

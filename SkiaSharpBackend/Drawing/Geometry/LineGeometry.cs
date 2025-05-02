@@ -1,13 +1,12 @@
 using Core.Kernel.Drawing.Geometry;
+using Core.Primitive;
 
 namespace SkiaSharpBackend.Drawing.Geometry;
 
 public class LineGeometry : BaseLineGeometry
 {
-    public override void Draw<TDrawnGeometry>(TDrawnGeometry context)
+    public override void Draw<TDrawnContext>(TDrawnContext context)
     {
-        if (context is not SkiaSharpDrawnContext skContext) return;
-
-        skContext.Canvas.DrawLine(X, Y, X1, Y1, skContext.ActivateSkPaint);
+        context.DrawLine(new Point(X, Y), new Point(X1, Y1));
     }
 }

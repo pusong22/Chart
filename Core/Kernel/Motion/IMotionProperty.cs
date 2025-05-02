@@ -5,7 +5,7 @@ public abstract class IMotionProperty(string propertyName)
 
     public string PropertyName { get; } = propertyName;
 
-    public Animation? Animation { get; set; }
+    public Animation? Animation { get; protected internal set; }
 }
 
 public abstract class IMotionProperty<T>(
