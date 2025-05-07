@@ -21,7 +21,7 @@ public static class Extensions
         {
             PaintStyle.Fill => SKPaintStyle.Fill,
             PaintStyle.Stroke => SKPaintStyle.Stroke,
-            _ => SKPaintStyle.Stroke,
+            _ => SKPaintStyle.Fill,
         };
     }
 
@@ -97,12 +97,10 @@ public static class Extensions
                     cartesianAxis.SubTickPaint ??= new Paint();
                     cartesianAxis.SeparatorPaint ??= new Paint()
                     {
-                        Style = PaintStyle.Stroke,
                         PathEffect = new DashEffectSetting([3, 3])
                     };
                     cartesianAxis.SubSeparatorPaint ??= new Paint()
                     {
-                        Style = PaintStyle.Stroke,
                         PathEffect = new DashEffectSetting([3, 3])
                     };
                 }
