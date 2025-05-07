@@ -1,4 +1,5 @@
 using Core.Kernel.Axis;
+using Core.Primitive;
 
 namespace Core.Helper;
 public class ChartConfig
@@ -39,5 +40,24 @@ public class ChartConfig
     {
         foreach (var action in AxisBuilder)
             action(axis);
+    }
+
+
+    private readonly Dictionary<Type, Delegate> _mappers = [];
+    public ChartConfig AddValueTypeParser<TValueType>(Func<double, TValueType, Coordinate> parser)
+    {
+        var type = typeof(TValueType);
+        _mappers[type] = parser;
+        return this;
+    }
+
+    public Func<double, TValueType, Coordinate> GetParser<TValueType>()
+    {
+        if (_mappers.TryGetValue(typeof(TValueType), out var map))
+        {
+            return (Func<double, TValueType, Coordinate>)map;
+        }
+
+        throw new NotImplementedException($"Don`t parse the ${typeof(TValueType)} type.");
     }
 }

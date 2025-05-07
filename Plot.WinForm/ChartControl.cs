@@ -1,6 +1,7 @@
 using Core.Helper;
 using Core.Kernel.Axis;
 using Core.Kernel.Chart;
+using Core.Kernel.Series;
 using Core.Kernel.View;
 using SkiaSharpBackend;
 
@@ -9,6 +10,7 @@ public abstract partial class ChartControl : UserControl, IChartView
 {
     private IEnumerable<CoreAxis>? _xAxes;
     private IEnumerable<CoreAxis>? _yAxes;
+    private IEnumerable<CoreSeries>? _series;
 
     protected ChartControl()
     {
@@ -44,6 +46,16 @@ public abstract partial class ChartControl : UserControl, IChartView
         set
         {
             _yAxes = value;
+        }
+    }
+
+
+    public IEnumerable<CoreSeries>? Series
+    {
+        get => _series;
+        set
+        {
+            _series = value;
         }
     }
 

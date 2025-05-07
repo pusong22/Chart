@@ -5,7 +5,7 @@ public class Paint
 {
     public int ZIndex { get; set; } = -1;
     public string? FontFamily { get; set; }
-    public bool IsAntialias { get; set; } = false;
+    public bool IsAntialias { get; set; }
 
     public Color Color { get; set; }
     public PaintStyle? Style { get; set; }

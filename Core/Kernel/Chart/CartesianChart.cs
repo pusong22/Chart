@@ -1,6 +1,7 @@
 using Core.Helper;
 using Core.Kernel.Axis;
 using Core.Kernel.Layout;
+using Core.Kernel.Series;
 using Core.Kernel.View;
 using Core.Primitive;
 
@@ -11,9 +12,9 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
 {
     public CoreDrawnDataArea? CoreDrawnDataArea => view.CoreDrawnDataArea;
 
-    public CoreCartesianAxis[] XAxes { get; private set; } = [];
-    public CoreCartesianAxis[] YAxes { get; private set; } = [];
-    public IEnumerable<CoreCartesianAxis> Axes => XAxes.Concat(YAxes);
+    public CoreCartesianAxis[]? XAxes { get; private set; }
+    public CoreCartesianAxis[]? YAxes { get; private set; }
+    public CoreCartesianSeries[]? Series { get; private set; }
 
     protected override void Measure()
     {
@@ -42,6 +43,12 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
         {
             throw new Exception($"{nameof(XAxes)} and {nameof(YAxes)} must contain at least one element.");
         }
+
+
+        var s = view.Series;
+
+        Series = s.Cast<CoreCartesianSeries>().ToArray();
+
 
         foreach (var axis in XAxes)
         {
@@ -81,9 +88,15 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
 
         CoreDrawnDataArea?.Invalidate(this);
 
-        foreach (var axis in Axes)
+        var axes = XAxes.Concat(YAxes);
+        foreach (var axis in axes)
         {
             axis.Invalidate(this);
+        }
+
+        foreach (var s in Series!)
+        {
+            s.Invalidate(this);
         }
 
         Canvas.Invalidate();

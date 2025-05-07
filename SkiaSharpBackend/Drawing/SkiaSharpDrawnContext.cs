@@ -94,4 +94,15 @@ public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
     {
         Canvas.DrawLine(p1.ToSKPoint(), p2.ToSKPoint(), ActivateSkPaint!);
     }
+
+    public override void DrawCircle(Point p, float rd)
+    {
+        Canvas.DrawCircle(p.ToSKPoint(), rd, ActivateSkPaint!);
+    }
+
+    // TODO：迁移
+    public void DrawPath(SKPath path)
+    {
+        Canvas.DrawPath(path, ActivateSkPaint!);
+    }
 }

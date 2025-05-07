@@ -108,5 +108,12 @@ public static class Extensions
                 }
             });
         });
+
+        chartConfig
+            .AddValueTypeParser<short>((x, y) => new(y, y))
+            .AddValueTypeParser<int>((x, y) => new(x, y))
+            .AddValueTypeParser<double>((x, y) => new(x, y))
+            .AddValueTypeParser<float>((x, y) => new(x, y))
+            .AddValueTypeParser<long>((x, y) => new(x, y));
     }
 }

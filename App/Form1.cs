@@ -1,5 +1,7 @@
 using Core.Kernel.Painting;
+using Core.Primitive;
 using Plot.WinForm;
+using SkiaSharpBackend;
 using SkiaSharpBackend.Drawing;
 
 namespace App;
@@ -37,7 +39,17 @@ public partial class Form1 : Form
                 //new Axis() { Name = "Y Axis10"},
                 //new Axis() { Name = "Y Axis11"},
             ],
-            CoreDrawnDataArea = area
+            Series = [
+                new LineSeries<double>([-1,-5,10,3,4,5,6,7,8,9])
+                {
+                    LinePaint = new Paint(){IsAntialias = true },
+                    StrokeGeometryPaint = new Paint(){IsAntialias = true, Color=new(0, 0, 255)  },
+                    FillGeometryPaint = new Paint(){IsAntialias = true, Color=new(255, 255, 255) },
+                    LineSmoothness = 1f,
+                    VisualGeometrySize = 40f
+                },
+            ]
+            //CoreDrawnDataArea = area
         };
 
         Controls.Add(chart);

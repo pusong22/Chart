@@ -23,4 +23,5 @@ public abstract class DrawnContext
     public abstract void DrawText(string text, Point p);
 
     public abstract void DrawLine(Point p1, Point p2);
+    public abstract void DrawCircle(Point p, float rd);
 }
