@@ -4,7 +4,6 @@ using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Measuring;
 using Core.Kernel.Painting;
 using Core.Primitive;
-using System.IO.MemoryMappedFiles;
 
 namespace Core.Kernel.Series;
 
@@ -122,6 +121,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
             if (LinePaint is not null)
             {
+                LinePaint.Style = PaintStyle.Stroke;
                 chart.Canvas.AddDrawnTask(LinePaint, path);
             }
 

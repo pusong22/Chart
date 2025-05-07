@@ -1,7 +1,7 @@
 
 namespace App;
 
-public partial class BezierCurveDemo: Form
+public partial class BezierCurveDemo : Form
 {
     private Point[] controlPoints = new Point[4];
     private int draggingPointIndex = -1;
@@ -70,7 +70,7 @@ public partial class BezierCurveDemo: Form
         g.DrawLine(controlLinePen, controlPoints[0], controlPoints[1]);
         g.DrawLine(controlLinePen, controlPoints[1], controlPoints[2]);
         g.DrawLine(controlLinePen, controlPoints[2], controlPoints[3]);
-        
+
         // 绘制贝塞尔曲线
         List<Point> bezierPoints = new List<Point>();
         for (float t = 0; t <= 1; t += 0.01f) // 步长越小，曲线越平滑

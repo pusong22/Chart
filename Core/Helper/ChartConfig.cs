@@ -1,10 +1,14 @@
 using Core.Kernel.Axis;
+using Core.Kernel.Series;
 using Core.Primitive;
 
 namespace Core.Helper;
 public class ChartConfig
 {
     private Provider? _provider;
+    private List<Action<CoreAxis>> _axisBuilder = [];
+    private List<Action<CoreSeries>> _seriesBuilder = [];
+    private readonly Dictionary<Type, Delegate> _mappers = [];
 
     public static ChartConfig Instance { get; } = new();
 
@@ -34,16 +38,39 @@ public class ChartConfig
         return _provider ?? throw new ArgumentNullException($"{nameof(_provider)}");
     }
 
-    public List<Action<CoreAxis>> AxisBuilder { get; set; } = [];
+    #region Apply Style
+
+    public ChartConfig AddRuleForAxes(Action<CoreAxis> predicate)
+    {
+        _axisBuilder.Add(predicate);
+        return this;
+    }
+
+    public ChartConfig AddRuleForSeries(Action<CoreSeries> predicate)
+    {
+        _seriesBuilder.Add(predicate);
+        return this;
+    }
 
     public void ApplyStyleToAxis(CoreAxis axis)
     {
-        foreach (var action in AxisBuilder)
+        foreach (var action in _axisBuilder)
             action(axis);
     }
 
+    public void ApplyStyleToSeries(CoreSeries series)
+    {
+        foreach (var action in _seriesBuilder)
+            action(series);
+    }
 
-    private readonly Dictionary<Type, Delegate> _mappers = [];
+    public void ApplyStyle(Action<ChartConfig> builder)
+    {
+        builder(Instance);
+    }
+    #endregion
+
+    #region Coordinate Mapper
     public ChartConfig AddValueTypeParser<TValueType>(Func<double, TValueType, Coordinate> parser)
     {
         var type = typeof(TValueType);
@@ -60,4 +87,5 @@ public class ChartConfig
 
         throw new NotImplementedException($"Don`t parse the ${typeof(TValueType)} type.");
     }
+    #endregion
 }

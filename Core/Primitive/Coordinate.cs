@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Core.Primitive;
 public readonly struct Coordinate(double x, double y)
 {

@@ -7,5 +7,5 @@ public class LineSeries<TValueType>
 {
     public LineSeries() : base(null) { }
 
-    public LineSeries(IReadOnlyCollection<TValueType> values): base(values) {  } 
+    public LineSeries(IReadOnlyCollection<TValueType> values) : base(values) { }
 }

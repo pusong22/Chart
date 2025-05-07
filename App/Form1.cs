@@ -1,5 +1,4 @@
 using Core.Kernel.Painting;
-using Core.Primitive;
 using Plot.WinForm;
 using SkiaSharpBackend;
 using SkiaSharpBackend.Drawing;
@@ -42,7 +41,6 @@ public partial class Form1 : Form
             Series = [
                 new LineSeries<double>([-1,-5,10,3,4,5,6,7,8,9])
                 {
-                    LinePaint = new Paint(){IsAntialias = true },
                     StrokeGeometryPaint = new Paint(){IsAntialias = true, Color=new(0, 0, 255)  },
                     FillGeometryPaint = new Paint(){IsAntialias = true, Color=new(255, 255, 255) },
                     LineSmoothness = 1f,

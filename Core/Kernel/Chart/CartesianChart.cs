@@ -49,6 +49,14 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
 
         Series = s.Cast<CoreCartesianSeries>().ToArray();
 
+        foreach (var series in Series)
+        {
+            if (instance != series.Tag)
+            {
+                instance.ApplyStyleToSeries(series);
+                series.Tag = instance;
+            }
+        }
 
         foreach (var axis in XAxes)
         {

@@ -1,6 +1,7 @@
 using Core.Helper;
 using Core.Kernel.Axis;
 using Core.Kernel.Painting;
+using Core.Kernel.Series;
 using Core.Primitive;
 using SkiaSharp;
 
@@ -57,25 +58,15 @@ public static class Extensions
         return new Color(color.Red, color.Green, color.Blue, color.Alpha);
     }
 
-
-    public static void ApplyStyle(this ChartConfig chartConfig, Action<ChartConfig> builder)
-    {
-        builder(chartConfig);
-    }
-
-    public static ChartConfig AddRuleForAxes(this ChartConfig styler, Action<CoreAxis> predicate)
-    {
-        styler.AxisBuilder.Add(predicate);
-        return styler;
-    }
-
     public static void UseDefault(this ChartConfig chartConfig)
     {
         chartConfig.SetProvider(new SkiaSharpProvider());
 
-        chartConfig.ApplyStyle(t =>
+        // TODO: paint的Style根据不同功能自动设置
+        chartConfig.ApplyStyle(config =>
         {
-            t.AddRuleForAxes(axis =>
+            config
+            .AddRuleForAxes(axis =>
             {
                 axis.NameSize ??= 16f;
                 axis.LabelSize ??= 16f;
@@ -103,6 +94,13 @@ public static class Extensions
                     {
                         PathEffect = new DashEffectSetting([3, 3])
                     };
+                }
+            })
+            .AddRuleForSeries(series =>
+            {
+                if (series is CoreCartesianSeries cartesianSeries)
+                {
+                    cartesianSeries.LinePaint ??= new Paint();
                 }
             });
         });
