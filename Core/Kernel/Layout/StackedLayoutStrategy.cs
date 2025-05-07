@@ -12,8 +12,8 @@ namespace Core.Kernel.Layout
                 r = 0f,
                 b = 0f;
 
-            int xaxisCount = chart.XAxes.Length;
-            int yaxisCount = chart.YAxes.Length;
+            int xaxisCount = chart.XAxes!.Length;
+            int yaxisCount = chart.YAxes!.Length;
 
             Size xmaxNameSize = new(0f, 0f);
             Size xmaxLabelSize = new(0f, 0f);

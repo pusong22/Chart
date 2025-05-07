@@ -31,6 +31,25 @@ public abstract class CoreCartesianSeries : CoreSeries
     }
 
     public Paint? LinePaint { get; set; }
+
+    public abstract IEnumerable<Coordinate> Fetch();
+
+    public virtual SeriesBound GetBound()
+    {
+        var primaryaryBound = new Bound(0d, 0d);
+        var secondaryBound = new Bound(0d, 0d);
+        foreach (var item in Fetch())
+        {
+            primaryaryBound.AppendValue(item.X);
+            secondaryBound.AppendValue(item.Y);
+        }
+
+        return new SeriesBound()
+        {
+            PrimaryaryBound = primaryaryBound,
+            SecondaryBound = secondaryBound
+        };
+    }
 }
 
 public abstract class CoreLineSeries : CoreCartesianSeries
@@ -165,7 +184,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
     }
 
 
-    protected IEnumerable<Coordinate> Fetch()
+    public override IEnumerable<Coordinate> Fetch()
     {
         var parser = ChartConfig.Instance.GetParser<TValueType>();
         int index = 0;

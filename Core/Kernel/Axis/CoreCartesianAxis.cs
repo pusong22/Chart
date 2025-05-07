@@ -45,6 +45,14 @@ public abstract class CoreCartesianAxis : CoreAxis
 
         ValidateAxisLimit();
     }
+
+    public void SetBound(double min, double max)
+    {
+        Min = Max = 0d;
+
+        if (Min > min) Min = min;
+        if (Max < max) Max = max;
+}
 }
 
 public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCartesianAxis
