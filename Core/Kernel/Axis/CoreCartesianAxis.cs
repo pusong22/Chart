@@ -52,7 +52,7 @@ public abstract class CoreCartesianAxis : CoreAxis
 
         if (Min > min) Min = min;
         if (Max < max) Max = max;
-}
+    }
 }
 
 public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCartesianAxis
@@ -68,11 +68,16 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
     {
         var controlSize = chart.ControlSize;
 
-        var scaler = new Scaler(this, LabelDesiredRect.Location, NameDesiredRect.Size);
-        var labeler = GetActualLabeler();
+        var location = LabelDesiredRect.Location;
+        var size = NameDesiredRect.Size;
 
-        var location = chart.DrawnLocation;
-        var size = chart.DrawnSize;
+        double step = this.GetIdealStep(size);
+
+        var start = Math.Floor(Min / step) * step;
+        Min = start;
+
+        var scaler = new Scaler(this, location, size);
+        var labeler = GetActualLabeler();
 
         float lxi = location.X;
         float lxj = location.X + size.Width;
@@ -160,9 +165,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         #endregion
 
-        double step = this.GetIdealStep(NameDesiredRect.Size);
 
-        var start = Math.Truncate(Min / step) * step;
 
         foreach (var i in this.EnumerateSeparators(start, Max, step))
         {
@@ -203,7 +206,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
                 chart.Canvas.AddDrawnTask(TickPaint, axisVisual.Tick);
             }
 
-            if (SubTickPaint is not null && i >= Min && i < Max)
+            if (SubTickPaint is not null && (i >= Min && i < Max))
             {
                 if (axisVisual.SubTick is null)
                 {
@@ -252,8 +255,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
                 chart.Canvas.AddDrawnTask(SeparatorPaint, axisVisual.Separator);
             }
 
-            if (SubSeparatorPaint is not null && ShowSeparatorLine!.Value
-                && i >= Min && i < Max)
+            if (SubSeparatorPaint is not null && ShowSeparatorLine!.Value && (i >= Min && i < Max))
             {
                 if (axisVisual.SubSeparator is null)
                 {
@@ -396,7 +398,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         double step = this.GetIdealStep(size);
 
-        var start = Math.Truncate(Min / step) * step;
+        var start = Math.Floor(Min / step) * step;
 
         float w = 0f, h = 0f;
 
