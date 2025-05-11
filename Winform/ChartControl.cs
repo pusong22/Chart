@@ -5,7 +5,7 @@ using Core.Kernel.Series;
 using Core.Kernel.View;
 using SkiaSharpBackend;
 
-namespace Plot.WinForm;
+namespace WinForm;
 public abstract partial class ChartControl : UserControl, IChartView
 {
     private IEnumerable<CoreAxis>? _xAxes;

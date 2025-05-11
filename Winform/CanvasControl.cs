@@ -3,7 +3,7 @@ using Core.Kernel.Chart;
 using SkiaSharp.Views.Desktop;
 using SkiaSharpBackend.Drawing;
 
-namespace Plot.WinForm;
+namespace WinForm;
 public partial class CanvasControl : UserControl
 {
     private bool _invalidating = false;

@@ -8,12 +8,8 @@ public class LabelGeometry : BaseLabelGeometry
     private float _maxTextHeight = 0f;
     private int _lines = 0;
 
-    public bool ShowRect { get; set; }
-
     public override void Draw<TDrawnContext>(TDrawnContext context)
     {
-        var size = Measure();
-
         // 因为是每次画一行，初始化的x,y是中心点，经测试发现skia字体逻辑是
         // Align.Left, Align.Bottom，
         float h = _lines > 1
@@ -28,29 +24,11 @@ public class LabelGeometry : BaseLabelGeometry
 
         foreach (var line in GetLines())
         {
-            var bound = context.MeasureText(line);
+            var bound = context.MeasureText<SKRect>(line);
 
             var xo = GetAlignmentOffset(bound);
 
-            context.DrawText(line, new Point(X + xo.X, Y + xo.Y + h));
-
-#if DEBUG
-            if (ShowRect)
-            {
-                var p = Padding ?? new Padding(0f);
-
-                context.DrawRect(new Rect(
-                    X + xo.X,
-                    Y + xo.Y + h - bound.Height, bound.Width,
-                    bound.Height * LineHeight));
-
-                context.DrawRect(new Rect(
-                    X + xo.X - p.Left,
-                    Y + xo.Y + h - bound.Height - p.Top,
-                    bound.Width + p.Left + p.Right,
-                    bound.Height * LineHeight + p.Top + p.Bottom));
-            }
-#endif
+            context.DrawText(line, new SKPoint(X + xo.X, Y + xo.Y + h));
 
             h += _maxTextHeight * LineHeight;
         }
@@ -103,12 +81,12 @@ public class LabelGeometry : BaseLabelGeometry
     }
 
 
-    private Point GetAlignmentOffset(Rect bounds)
+    private SKPoint GetAlignmentOffset(SKRect bounds)
     {
         var w = bounds.Width;
         var h = bounds.Height;
 
-        float l = -bounds.X, t = -bounds.Y;
+        float l = -bounds.Left, t = -bounds.Top;
 
         switch (VerticalAlign)
         {

@@ -12,7 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Plot.WinForm\Plot.WinForm.csproj" />
+      <ProjectReference Include="..\Winform\Winform.csproj" />
     </ItemGroup>
 
 </Project>

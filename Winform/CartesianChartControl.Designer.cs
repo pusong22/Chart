@@ -1,4 +1,4 @@
-﻿namespace Plot.WinForm;
+namespace WinForm;
 
 partial class CartesianChartControl
 {

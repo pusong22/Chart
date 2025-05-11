@@ -1,7 +1,7 @@
 using Core.Helper;
 using SkiaSharp.Views.Desktop;
 
-namespace Plot.WinForm;
+namespace WinForm;
 
 partial class CanvasControl
 {

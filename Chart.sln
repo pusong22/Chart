@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plot.WinForm", "Plot.WinForm\Plot.WinForm.csproj", "{1E98396C-B226-48DD-B1CF-F8A21BF46218}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "App\App.csproj", "{0FD87C88-3F48-43E3-9AC4-55CC168D86AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SkiaSharpBackend", "SkiaSharpBackend\SkiaSharpBackend.csproj", "{3118C547-EBEE-4A66-8A32-B94B4FA7250F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{7813E9E7-8CD8-4478-BF2A-A2FACBD0B708}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Winform", "Winform\Winform.csproj", "{099AFD9C-3443-4322-891D-340877AADE9A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +19,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218}.Debug|x64.ActiveCfg = Debug|x64
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218}.Debug|x64.Build.0 = Debug|x64
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218}.Debug|x86.ActiveCfg = Debug|x86
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218}.Debug|x86.Build.0 = Debug|x86
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218}.Release|x64.ActiveCfg = Release|x64
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218}.Release|x64.Build.0 = Release|x64
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218}.Release|x86.ActiveCfg = Release|x86
-		{1E98396C-B226-48DD-B1CF-F8A21BF46218}.Release|x86.Build.0 = Release|x86
 		{0FD87C88-3F48-43E3-9AC4-55CC168D86AC}.Debug|x64.ActiveCfg = Debug|x64
 		{0FD87C88-3F48-43E3-9AC4-55CC168D86AC}.Debug|x64.Build.0 = Debug|x64
 		{0FD87C88-3F48-43E3-9AC4-55CC168D86AC}.Debug|x86.ActiveCfg = Debug|x86
@@ -51,6 +43,14 @@ Global
 		{7813E9E7-8CD8-4478-BF2A-A2FACBD0B708}.Release|x64.Build.0 = Release|Any CPU
 		{7813E9E7-8CD8-4478-BF2A-A2FACBD0B708}.Release|x86.ActiveCfg = Release|x86
 		{7813E9E7-8CD8-4478-BF2A-A2FACBD0B708}.Release|x86.Build.0 = Release|x86
+		{099AFD9C-3443-4322-891D-340877AADE9A}.Debug|x64.ActiveCfg = Debug|x64
+		{099AFD9C-3443-4322-891D-340877AADE9A}.Debug|x64.Build.0 = Debug|x64
+		{099AFD9C-3443-4322-891D-340877AADE9A}.Debug|x86.ActiveCfg = Debug|x86
+		{099AFD9C-3443-4322-891D-340877AADE9A}.Debug|x86.Build.0 = Debug|x86
+		{099AFD9C-3443-4322-891D-340877AADE9A}.Release|x64.ActiveCfg = Release|x64
+		{099AFD9C-3443-4322-891D-340877AADE9A}.Release|x64.Build.0 = Release|x64
+		{099AFD9C-3443-4322-891D-340877AADE9A}.Release|x86.ActiveCfg = Release|x86
+		{099AFD9C-3443-4322-891D-340877AADE9A}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

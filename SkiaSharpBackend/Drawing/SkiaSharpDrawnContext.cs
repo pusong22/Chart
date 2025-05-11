@@ -1,7 +1,6 @@
 using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Painting;
-using Core.Primitive;
 using SkiaSharp;
 
 namespace SkiaSharpBackend.Drawing;
@@ -73,36 +72,47 @@ public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
         ActivateSkFont.Typeface = paint.ToSKTypeface();
     }
 
-    public override Rect MeasureText(string text)
+    public override TRect MeasureText<TRect>(string text)
     {
         ActivateSkFont!.MeasureText(text, out var bound, ActivateSkPaint!);
 
-        return new Rect(new Point(bound.Left, bound.Top), new Size(bound.Width, bound.Height));
+        return (TRect)(object)bound;
     }
 
-    public override void DrawRect(Rect rect)
+    public override void DrawRect<TRect>(TRect rect)
     {
-        Canvas.DrawRect(rect.ToSKRect(), ActivateSkPaint!);
+        if (rect is not SKRect skRect) return;
+
+        Canvas.DrawRect(skRect, ActivateSkPaint!);
     }
 
-    public override void DrawText(string text, Point p)
+    public override void DrawText<TPoint>(string text, TPoint p)
     {
-        Canvas.DrawText(text, p.ToSKPoint(), ActivateSkFont!, ActivateSkPaint!);
+        if (p is not SKPoint skPoint) return;
+
+        Canvas.DrawText(text, skPoint, ActivateSkFont!, ActivateSkPaint!);
     }
 
-    public override void DrawLine(Point p1, Point p2)
+    public override void DrawLine<TPoint>(TPoint p1, TPoint p2)
     {
-        Canvas.DrawLine(p1.ToSKPoint(), p2.ToSKPoint(), ActivateSkPaint!);
+        if (p1 is not SKPoint skPoint1) return;
+        if (p2 is not SKPoint skPoint2) return;
+
+        Canvas.DrawLine(skPoint1, skPoint2, ActivateSkPaint!);
     }
 
-    public override void DrawCircle(Point p, float rd)
+    public override void DrawCircle<TPoint>(TPoint p, float rd)
     {
-        Canvas.DrawCircle(p.ToSKPoint(), rd, ActivateSkPaint!);
+        if (p is not SKPoint skPoint) return;
+
+        Canvas.DrawCircle(skPoint, rd, ActivateSkPaint!);
     }
 
     // TODO：迁移
-    public void DrawPath(SKPath path)
+    public override void DrawPath<TPath>(TPath path)
     {
-        Canvas.DrawPath(path, ActivateSkPaint!);
+        if (path is not SKPath skPath) return;
+
+        Canvas.DrawPath(skPath, ActivateSkPaint!);
     }
 }

@@ -1,5 +1,5 @@
 using Core.Kernel.Drawing.Geometry;
-using Core.Primitive;
+using SkiaSharp;
 
 namespace SkiaSharpBackend.Drawing.Geometry;
 public class CircleGeometry : BaseRectangleGeometry
@@ -7,7 +7,7 @@ public class CircleGeometry : BaseRectangleGeometry
     public override void Draw<TDrawnContext>(TDrawnContext context)
     {
         float radius = Width / 2f;
-        context.DrawCircle(new Point(X, Y), radius);
-        context.DrawCircle(new Point(X, Y), radius / 9);
+        context.DrawCircle(new SKPoint(X, Y), radius);
+        context.DrawCircle(new SKPoint(X, Y), radius / 9);
     }
 }

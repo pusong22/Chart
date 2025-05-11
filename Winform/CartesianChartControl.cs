@@ -3,7 +3,7 @@ using Core.Kernel.Chart;
 using Core.Kernel.View;
 using Core.Primitive;
 
-namespace Plot.WinForm;
+namespace WinForm;
 public partial class CartesianChartControl : ChartControl, ICartesianChartView
 {
     private CoreChart? _coreChart;

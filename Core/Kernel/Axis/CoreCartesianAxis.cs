@@ -68,21 +68,21 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
     {
         var controlSize = chart.ControlSize;
 
-        var location = LabelDesiredRect.Location;
-        var size = NameDesiredRect.Size;
+        var drawLocation = chart.DrawnLocation;
+        var drawSize = chart.DrawnSize;
 
-        double step = this.GetIdealStep(size);
+        double step = this.GetIdealStep(NameDesiredRect.Size);
 
         var start = Math.Floor(Min / step) * step;
         Min = start;
 
-        var scaler = new Scaler(this, location, size);
+        var scaler = new Scaler(this, LabelDesiredRect.Location, NameDesiredRect.Size);
         var labeler = GetActualLabeler();
 
-        float lxi = location.X;
-        float lxj = location.X + size.Width;
-        float lyi = location.Y;
-        float lyj = location.Y + size.Height;
+        float lxi = drawLocation.X;
+        float lxj = drawLocation.X + drawSize.Width;
+        float lyi = drawLocation.Y;
+        float lyj = drawLocation.Y + drawSize.Height;
 
         var g = new HashSet<AxisVisual>();
 
@@ -146,8 +146,8 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
             if (Orientation == AxisOrientation.X)
             {
                 var yp = yo + LabelDesiredRect.Height * 0.5f * (Position == AxisPosition.Start ? -1 : 1);
-                _tickPath.X = lxi;
-                _tickPath.X1 = lxj;
+                _tickPath.X = LabelDesiredRect.Location.X;
+                _tickPath.X1 = LabelDesiredRect.Location.X + LabelDesiredRect.Size.Width;
                 _tickPath.Y = yp;
                 _tickPath.Y1 = yp;
             }
@@ -156,8 +156,8 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
                 var xp = xo + LabelDesiredRect.Width * 0.5f * (Position == AxisPosition.Start ? 1 : -1);
                 _tickPath.X = xp;
                 _tickPath.X1 = xp;
-                _tickPath.Y = lyi;
-                _tickPath.Y1 = lyj;
+                _tickPath.Y = LabelDesiredRect.Location.Y;
+                _tickPath.Y1 = LabelDesiredRect.Location.Y + LabelDesiredRect.Size.Height;
             }
 
             chart.Canvas.AddDrawnTask(TickPaint, _tickPath);

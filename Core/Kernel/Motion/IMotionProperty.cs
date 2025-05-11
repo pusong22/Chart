@@ -51,6 +51,8 @@ public abstract class IMotionProperty<T>(
         if (_startTime < 0)
         {
             _startTime = animatable.CurrentTime;
+
+            return Interpolate(0f);
         }
 
         var elapsed = animatable.CurrentTime - _startTime;
