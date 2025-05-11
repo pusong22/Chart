@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>WinExe</OutputType>
         <TargetFramework>net4.8</TargetFramework>
-        <UseWindowsForms>true</UseWindowsForms>
+        <UseWPF>true</UseWPF>
 
         <Platforms>x64;x86</Platforms>
         <LangVersion>latest</LangVersion>
@@ -11,11 +12,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="2.88.9" />
+        <ProjectReference Include="..\Wpf\Wpf.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\SkiaSharpBackend\SkiaSharpBackend.csproj" />
-    </ItemGroup>
 
 </Project>

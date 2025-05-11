@@ -36,12 +36,12 @@ partial class CanvasControl
 
         if (ChartConfig.USE_GPU)
         {
-            _skGLControl = new SKGLControl();
-            _skGLControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            _skGLControl.Size = new System.Drawing.Size(1000, 1000);
-            _skGLControl.TabIndex = 1;
-            _skGLControl.PaintSurface += new System.EventHandler<SKPaintGLSurfaceEventArgs>(this.SkglControl_PaintSurface);
-            Controls.Add(_skGLControl);
+            //_skGLControl = new SKGLControl();
+            //_skGLControl.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            //_skGLControl.Size = new System.Drawing.Size(1000, 1000);
+            //_skGLControl.TabIndex = 1;
+            //_skGLControl.PaintSurface += new System.EventHandler<SKPaintGLSurfaceEventArgs>(this.SkglControl_PaintSurface);
+            //Controls.Add(_skGLControl);
         }
         else
         {
@@ -64,5 +64,5 @@ partial class CanvasControl
     #endregion
 
     private SKControl _skControl;
-    private SKGLControl _skGLControl;
+    //private SKGLControl _skGLControl;
 }

@@ -25,9 +25,7 @@ public abstract partial class ChartControl : UserControl, IChartView
     {
         get
         {
-            using var g = CreateGraphics();
-            float scale = g.DpiX / 96f;
-            return new(ClientSize.Width / scale, ClientSize.Height / scale);
+            return new(_canvasControl.ClientSize.Width, _canvasControl.ClientSize.Height);
         }
     }
 

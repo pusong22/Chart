@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net4.8</TargetFramework>
-        <UseWindowsForms>true</UseWindowsForms>
-
+        <UseWPF>true</UseWPF>
+        
         <Platforms>x64;x86</Platforms>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -11,11 +11,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="2.88.9" />
+        <PackageReference Include="SkiaSharp.Views.WPF" Version="2.88.9" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SkiaSharpBackend\SkiaSharpBackend.csproj" />
+        <ProjectReference Include="..\SkiaSharpBackend\SkiaSharpBackend.csproj" />
     </ItemGroup>
 
 </Project>
