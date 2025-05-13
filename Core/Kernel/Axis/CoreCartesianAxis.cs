@@ -442,7 +442,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         {
             var subSeparator = subSeparators[j];
 
-            var kl = (j + 1) / (double)(SeparatorCount!.Value + 1);
+            var kl = (j + 1) / (double)SeparatorCount!.Value;
 
             float xs = 0f, ys = 0f;
             if (Orientation == AxisOrientation.X)
@@ -523,7 +523,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         {
             var subtick = subticks[j];
 
-            var kl = (j + 1) / (double)(SeparatorCount!.Value + 1);
+            var kl = (j + 1) / (double)SeparatorCount!.Value;
 
             float xs = 0f, ys = 0f;
             if (Orientation == AxisOrientation.X)

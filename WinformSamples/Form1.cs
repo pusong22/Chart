@@ -27,7 +27,7 @@ public partial class Form1 : Form
             XAxes = [new Axis() { Name = "X Axis", ShowSeparatorLine = false, DrawTickPath = false, }],
             YAxes = [
                 new Axis() { Name = "Y Axis1", ShowSeparatorLine = false, DrawTickPath = false, },
-                new Axis() { Name = "Y Axis2", ShowSeparatorLine = false, DrawTickPath = false, },
+                //new Axis() { Name = "Y Axis2", ShowSeparatorLine = false, DrawTickPath = false, },
                 //new Axis() { Name = "Y Axis3"},
                 //new Axis() { Name = "Y Axis4"},
                 //new Axis() { Name = "Y Axis5"},
@@ -44,16 +44,17 @@ public partial class Form1 : Form
                     StrokeGeometryPaint = new Paint(){IsAntialias = true, Color=new(0, 0, 255)  },
                     FillGeometryPaint = new Paint(){IsAntialias = true, Color=new(255, 255, 255) },
                     LineSmoothness = 0.5f,
-                    VisualGeometrySize = 20f
-                },
-                new LineSeries<double>([-1,-5,10,3,4,5,6,7,8,9])
-                {
-                    StrokeGeometryPaint = new Paint(){IsAntialias = true, Color=new(0, 0, 255)  },
-                    FillGeometryPaint = new Paint(){IsAntialias = true, Color=new(255, 255, 255) },
-                    LineSmoothness = 0.5f,
                     VisualGeometrySize = 20f,
-                    YIndex = 1
+                    SampleInterval = 1/5d,
                 },
+                //new LineSeries<double>([-1,-5,10,3,4,5,6,7,8,9])
+                //{
+                //    StrokeGeometryPaint = new Paint(){IsAntialias = true, Color=new(0, 0, 255)  },
+                //    FillGeometryPaint = new Paint(){IsAntialias = true, Color=new(255, 255, 255) },
+                //    LineSmoothness = 0.5f,
+                //    VisualGeometrySize = 20f,
+                //    YIndex = 1
+                //},
             ]
             //CoreDrawnDataArea = area
         };

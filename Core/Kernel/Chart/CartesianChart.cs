@@ -10,7 +10,7 @@ namespace Core.Kernel.Chart;
 public class CartesianChart(ICartesianChartView view, Canvas canvas)
     : CoreChart(view, canvas)
 {
-    public CoreDrawnDataArea? CoreDrawnDataArea => view.CoreDrawnDataArea;
+    public CoreDrawnDataArea? CoreDrawnDataArea { get; private set; }
 
     public CoreCartesianAxis[]? XAxes { get; private set; }
     public CoreCartesianAxis[]? YAxes { get; private set; }
@@ -24,6 +24,8 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
 
         }
 #endif
+        CoreDrawnDataArea = view.CoreDrawnDataArea;
+
         var x = view.XAxes;
         var y = view.YAxes;
 
@@ -107,8 +109,6 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
 
     protected override void Invalidate()
     {
-        Canvas.IsCompleted = false;
-
         CoreDrawnDataArea?.Invalidate(this);
 
         var axes = XAxes.Concat(YAxes);

@@ -7,11 +7,10 @@ public abstract class CoreChart(IChartView view, Canvas canvas)
     private readonly object _sync = new();
 
     public Canvas Canvas { get; } = canvas;
-    public Rect DataRect { get; set; }
-    public Point DrawnLocation { get; set; }
-    public Size DrawnSize { get; set; }
+    public Point DrawnLocation { get; protected internal set; }
+    public Size DrawnSize { get; protected internal set; }
 
-    public Size ControlSize { get => view.ControlSize; }
+    public Size ControlSize { get; private set; }
 
 
     protected abstract void Measure();
@@ -29,6 +28,7 @@ public abstract class CoreChart(IChartView view, Canvas canvas)
         {
             lock (_sync)
             {
+                ControlSize = view.ControlSize;
                 Measure();
                 Invalidate();
             }

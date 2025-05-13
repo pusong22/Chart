@@ -54,7 +54,7 @@ public abstract class CoreCartesianSeries : CoreSeries
 
 public abstract class CoreLineSeries : CoreCartesianSeries
 {
-    private float _lineSmoothness = 0.65f;
+    private float _lineSmoothness;
 
     public float LineSmoothness
     {
@@ -68,6 +68,7 @@ public abstract class CoreLineSeries : CoreCartesianSeries
     }
 
     public float VisualGeometrySize { get; set; }
+    public double? SampleInterval { get; set; }
 }
 
 public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollection<TValueType>? values) : CoreLineSeries
@@ -283,12 +284,13 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
     public override IEnumerable<Coordinate> Fetch()
     {
         var parser = ChartConfig.Instance.GetParser<TValueType>();
-        int index = 0;
+        double index = 0;
         if (values is null) yield break;
 
         foreach (var value in values.Cast<TValueType>())
         {
-            yield return parser(index++, value!);
+            yield return parser(index * SampleInterval!.Value, value!);
+            index++;
         }
     }
 

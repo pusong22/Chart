@@ -102,6 +102,10 @@ public static class Extensions
                 {
                     cartesianSeries.LinePaint ??= new Paint();
                 }
+                if (series is CoreLineSeries lineSeries)
+                {
+                    lineSeries.SampleInterval ??= 1d;
+                }
             });
         });
 

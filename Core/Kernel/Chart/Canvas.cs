@@ -12,7 +12,7 @@ public class Canvas
     private readonly Dictionary<Paint, HashSet<DrawnGeometry>> _paintTask = [];
     public event EventHandler? InvalidatedHandler;
 
-    public bool IsCompleted { get; internal set; }
+    public bool IsCompleted { get; private set; }
 
     public void DrawFrame<TDrawnContext>(TDrawnContext context)
         where TDrawnContext : DrawnContext
@@ -37,8 +37,6 @@ public class Canvas
 
                 foreach (var geometry in item.Value)
                 {
-                    if (geometry is null) continue;
-
                     geometry.CurrentTime = frameTime;
 
                     isCompleted = isCompleted && geometry.IsCompleted;
@@ -78,6 +76,7 @@ public class Canvas
 
     public void Invalidate()
     {
+        IsCompleted = false;
         InvalidatedHandler?.Invoke(this, null);
     }
 }
