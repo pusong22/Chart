@@ -14,6 +14,8 @@ public class CanvasControl : UserControl
 
     public CanvasControl()
     {
+        InitializeSkElement();
+
         Loaded += OnLoad;
         Unloaded += OnUnLoad;
     }
@@ -48,7 +50,6 @@ public class CanvasControl : UserControl
 
     private void OnLoad(object sender, RoutedEventArgs e)
     {
-        InitializeSkElement();
         Canvas.InvalidatedHandler += OnInvalidate;
     }
 

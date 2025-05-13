@@ -108,7 +108,6 @@ public class SkiaSharpDrawnContext(SKSurface surface, SKImageInfo info)
         Canvas.DrawCircle(skPoint, rd, ActivateSkPaint!);
     }
 
-    // TODO：迁移
     public override void DrawPath<TPath>(TPath path)
     {
         if (path is not SKPath skPath) return;

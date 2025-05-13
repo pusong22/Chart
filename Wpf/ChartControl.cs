@@ -12,6 +12,8 @@ public abstract class ChartControl : UserControl, IChartView
 {
     protected ChartControl()
     {
+        Content = CanvasControl;
+
         ChartConfig.Configure(config => config.UseDefault());
 
         Loaded += OnLoad;
@@ -108,7 +110,6 @@ public abstract class ChartControl : UserControl, IChartView
 
     private void OnLoad(object sender, RoutedEventArgs e)
     {
-        Content = CanvasControl;
 
         CoreChart?.Load();
     }
