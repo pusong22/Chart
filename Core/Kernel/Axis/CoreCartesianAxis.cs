@@ -206,7 +206,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
                 chart.Canvas.AddDrawnTask(TickPaint, axisVisual.Tick);
             }
 
-            if (SubTickPaint is not null && (i >= Min && i < Max))
+            if (SubTickPaint is not null)
             {
                 if (axisVisual.SubTick is null)
                 {
@@ -219,7 +219,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
                     }
                 }
 
-                UpdateSubticks(axisVisual.SubTick, scaler, step, x, y, VisualState.Display);
+                UpdateSubticks(axisVisual.SubTick, scaler, step, x, y, lxi, lxj, lyi, lyj, VisualState.Display);
 
                 for (var j = 0; j < SeparatorCount; j++)
                 {
@@ -255,7 +255,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
                 chart.Canvas.AddDrawnTask(SeparatorPaint, axisVisual.Separator);
             }
 
-            if (SubSeparatorPaint is not null && ShowSeparatorLine!.Value && (i >= Min && i < Max))
+            if (SubSeparatorPaint is not null && ShowSeparatorLine!.Value)
             {
                 if (axisVisual.SubSeparator is null)
                 {
@@ -324,7 +324,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
             if (axisVisual.SubTick is not null)
             {
-                UpdateSubticks(axisVisual.SubTick, scaler, step, x, y, VisualState.Remove);
+                UpdateSubticks(axisVisual.SubTick, scaler, step, x, y, lxi, lxj, lyi, lyj, VisualState.Remove);
             }
 
             _ = _cached.Remove(item.Key);
@@ -448,10 +448,12 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
             if (Orientation == AxisOrientation.X)
             {
                 xs = scaler.MeasureInPixels(step * kl);
+                if (x + xs >= lxj || x + xs <= lxi) continue;
             }
             else
             {
                 ys = scaler.MeasureInPixels(step * kl);
+                if (y - ys >= lyj || y - ys <= lyi) continue;
             }
 
             UpdateSeparator(lxi, lxj, lyi, lyj, x + xs, y - ys, subSeparator, visualState);
@@ -517,8 +519,13 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         double step,
         float x,
         float y,
+        float lxi,
+        float lxj,
+        float lyi,
+        float lyj,
         VisualState visualState)
     {
+        System.Diagnostics.Debug.WriteLine($"Step: {step}");
         for (var j = 0; j < subticks.Length; j++)
         {
             var subtick = subticks[j];
@@ -529,10 +536,12 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
             if (Orientation == AxisOrientation.X)
             {
                 xs = scaler.MeasureInPixels(step * kl);
+                if (x + xs >= lxj || x + xs <= lxi) continue;
             }
             else
             {
                 ys = scaler.MeasureInPixels(step * kl);
+                if (y - ys >= lyj || y - ys <= lyi) continue;
             }
 
             UpdateTick(2.5f, x + xs, y - ys, subtick, visualState);

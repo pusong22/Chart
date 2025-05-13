@@ -103,6 +103,8 @@ public abstract class ChartControl : UserControl, IChartView
 
     public void InvokeUIThread(Action action)
     {
+        action();
+        return;
         Dispatcher.VerifyAccess();
 
         _ = Dispatcher.BeginInvoke(action);
@@ -110,7 +112,6 @@ public abstract class ChartControl : UserControl, IChartView
 
     private void OnLoad(object sender, RoutedEventArgs e)
     {
-
         CoreChart?.Load();
     }
 

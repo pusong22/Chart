@@ -121,7 +121,5 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
         {
             s.Invalidate(this);
         }
-
-        Canvas.Invalidate();
     }
 }

@@ -51,13 +51,7 @@ public class Scaler
 
     public float MeasureInPixels(double value)
     {
-        unchecked
-        {
-            return Math.Abs(
-                _orientation == AxisOrientation.X
-                    ? (float)(_minPx + (value - _minVal) * _pxPerVal - (_minPx + (0 - _minVal) * _pxPerVal))
-                    : (float)(_minPx + (0 - _minVal) * _pxPerVal - (_minPx + (value - _minVal) * _pxPerVal)));
-        }
+        return (float)Math.Abs(value * _pxPerVal);
     }
 
 

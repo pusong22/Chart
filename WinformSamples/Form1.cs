@@ -1,3 +1,4 @@
+using Core.Helper;
 using Core.Kernel.Painting;
 using SkiaSharpBackend;
 using SkiaSharpBackend.Drawing;
@@ -10,6 +11,8 @@ public partial class Form1 : Form
     public Form1()
     {
         InitializeComponent();
+
+        ChartConfig.DisabledAnimation = true;
 
         Core.Primitive.Color gray = new(169, 169, 169, 169);
         Core.Primitive.Color red = new(255, 0, 0);

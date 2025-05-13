@@ -1,3 +1,4 @@
+using Core.Helper;
 using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Painting;
@@ -20,6 +21,7 @@ public class Canvas
         // 
         lock (_sync)
         {
+            var disabledAnimation = ChartConfig.DisabledAnimation;
             var isCompleted = true;
 
             var removeTask = new List<Tuple<Paint, DrawnGeometry>>();
@@ -37,14 +39,17 @@ public class Canvas
 
                 foreach (var geometry in item.Value)
                 {
-                    geometry.CurrentTime = frameTime;
+                    if (disabledAnimation)
+                        geometry.RemoveMotion();
 
-                    isCompleted = isCompleted && geometry.IsCompleted;
+                    geometry.CurrentTime = frameTime;
+                  
+                    context.Draw(geometry);
 
                     if (geometry.Remove)
                         removeTask.Add(new Tuple<Paint, DrawnGeometry>(paint, geometry));
 
-                    context.Draw(geometry);
+                    isCompleted = isCompleted && geometry.IsCompleted;
                 }
 
                 context.DisposePaint();
@@ -78,5 +83,11 @@ public class Canvas
     {
         IsCompleted = false;
         InvalidatedHandler?.Invoke(this, null);
+    }
+
+    // TEST
+    public void Clear()
+    {
+        _paintTask.Clear();
     }
 }

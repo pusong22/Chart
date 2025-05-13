@@ -30,7 +30,9 @@ public abstract class CoreChart(IChartView view, Canvas canvas)
             {
                 ControlSize = view.ControlSize;
                 Measure();
+                //Canvas.Clear();
                 Invalidate();
+                Canvas.Invalidate();
             }
         });
     }
