@@ -15,8 +15,9 @@ public class CanvasControl : UserControl
     public CanvasControl()
     {
         InitializeSkElement();
+        
+        Canvas.InvalidatedHandler += OnInvalidate;
 
-        Loaded += OnLoad;
         Unloaded += OnUnLoad;
     }
 
@@ -38,19 +39,16 @@ public class CanvasControl : UserControl
 
     private void OnPaintSurface(object sender, SKPaintSurfaceEventArgs e)
     {
+        if (!_invalidating) return;
         var context = new SkiaSharpDrawnContext(e.Surface, e.Info);
         Canvas.DrawFrame(context);
     }
 
     private void OnPaintGLSurface(object sender, SKPaintGLSurfaceEventArgs e)
     {
+        if (!_invalidating) return;
         var context = new SkiaSharpDrawnContext(e.Surface, e.Info);
         Canvas.DrawFrame(context);
-    }
-
-    private void OnLoad(object sender, RoutedEventArgs e)
-    {
-        Canvas.InvalidatedHandler += OnInvalidate;
     }
 
     private void OnUnLoad(object sender, RoutedEventArgs e)

@@ -59,15 +59,30 @@ public abstract partial class ChartControl : UserControl, IChartView
 
     public void InvokeUIThread(Action action)
     {
-        if (!IsHandleCreated) return;
-        _ = BeginInvoke(action);
+        if (InvokeRequired)
+        {
+            _ = BeginInvoke(action);
+        }
+        else
+        {
+            action();
+        }
     }
 
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
 
-        CoreChart?.Load();
+        if (CoreChart is null || CoreChart.IsLoad) return;
+        CoreChart.Load();
+    }
+
+    protected override void OnHandleDestroyed(EventArgs e)
+    {
+        base.OnHandleDestroyed(e);
+
+        if (CoreChart is null || !CoreChart.IsLoad) return;
+        CoreChart.UnLoad();
     }
 
     protected override void OnResize(EventArgs e)
@@ -75,6 +90,7 @@ public abstract partial class ChartControl : UserControl, IChartView
         // 手动调用canvasControl的invalidate
         base.OnResize(e);
 
+        if (CoreChart is null || !CoreChart.IsLoad) return;
         //_canvasControl.Size = Size;
         CoreChart?.Update();
     }

@@ -61,6 +61,7 @@ public partial class CanvasControl : UserControl
 
     private void SkControl_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
     {
+        if (!_invalidating) return;
         var resolution = GetResolution();
         e.Surface.Canvas.Scale(resolution.DpiX, resolution.DpiY);
 
@@ -70,6 +71,7 @@ public partial class CanvasControl : UserControl
 
     private void SkglControl_PaintSurface(object sender, SKPaintGLSurfaceEventArgs e)
     {
+        if (!_invalidating) return;
         var resolution = GetResolution();
         e.Surface.Canvas.Scale(resolution.DpiX, resolution.DpiY);
 

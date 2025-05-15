@@ -103,26 +103,31 @@ public abstract class ChartControl : UserControl, IChartView
 
     public void InvokeUIThread(Action action)
     {
-        action();
-        return;
-        Dispatcher.VerifyAccess();
-
-        _ = Dispatcher.BeginInvoke(action);
+        if (Dispatcher.CheckAccess())
+        {
+            action();
+        }
+        else
+        {
+            _ = Dispatcher.BeginInvoke(action);
+        }
     }
 
     private void OnLoad(object sender, RoutedEventArgs e)
     {
-        CoreChart?.Load();
+        if (CoreChart is null || CoreChart.IsLoad) return;
+        CoreChart.Load();
     }
 
     private void OnUnLoad(object sender, RoutedEventArgs e)
     {
-        //CoreChart?.UnLoad();
+        if (CoreChart is null || !CoreChart.IsLoad) return;
+        CoreChart.UnLoad();
     }
-
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        CoreChart?.Update();
+        if (CoreChart is null || !CoreChart.IsLoad) return;
+        CoreChart.Update();
     }
 }
