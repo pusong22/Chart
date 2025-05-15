@@ -24,9 +24,6 @@ public static class Extensions
         if (relativeEnd / step > 1000)
             throw new Exception("Tick count is too larger");
 
-        // start from -step to include the first separator/sub-separator
-        // and end at relativeEnd + step to include the last separator/sub-separator
-
         for (var i = start; i <= end; i += step)
             yield return i;
     }

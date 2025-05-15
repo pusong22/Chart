@@ -83,7 +83,7 @@ public static class Extensions
                     cartesianAxis.LabelDensity ??= 1f;
                     cartesianAxis.TickLength ??= 5f;
                     cartesianAxis.DrawTickPath ??= true;
-                    cartesianAxis.SeparatorCount ??= 9;
+                    cartesianAxis.SeparatorCount ??= 5;
                     cartesianAxis.TickPaint ??= new Paint();
                     cartesianAxis.SubTickPaint ??= new Paint();
                     cartesianAxis.SeparatorPaint ??= new Paint()

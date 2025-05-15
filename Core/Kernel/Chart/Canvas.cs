@@ -76,7 +76,7 @@ public class Canvas
             _paintTask.Add(paint, g);
         }
 
-        g.Add(geometry);
+        _ = g.Add(geometry);
     }
 
     public void Invalidate()

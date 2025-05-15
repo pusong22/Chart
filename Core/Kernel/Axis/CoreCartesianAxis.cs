@@ -77,7 +77,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         Min = start;
 
         var scaler = new Scaler(this, LabelDesiredRect.Location, NameDesiredRect.Size);
-        var labeler = GetActualLabeler();
+        var labeler = GetActualLabeler(step);
 
         float lxi = drawLocation.X;
         float lxj = drawLocation.X + drawSize.Width;
@@ -335,9 +335,26 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
 
 
-    private Func<double, string> GetActualLabeler()
+    private Func<double, string> GetActualLabeler(double step)
     {
-        return Labeler ??= t => t.ToString("N1");
+        return Labeler = t =>
+        {
+            int decimalPlaces = GetDecimalPlaces(step) + 1;
+            return t.ToString($"N{decimalPlaces}");
+        };
+    }
+
+    private int GetDecimalPlaces(double value)
+    {
+        // 限制最多 10 位，避免精度浮动误差
+        for (int i = 0; i < 10; i++)
+        {
+            double scaled = value * Math.Pow(10, i);
+            if (Math.Abs(scaled - Math.Round(scaled)) < 1e-8)
+                return i;
+        }
+
+        return 10; // fallback 最大精度
     }
 
     public override Size MeasureNameLabelSize()
@@ -362,10 +379,10 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         if (LabelPaint is null || Max == Min)
             return new Size(0f, 0f);
 
-        var labeler = GetActualLabeler();
-
         const double testSeparators = 25;
         double step = (Max - Min) / testSeparators;
+
+        var labeler = GetActualLabeler(step);
 
         float w = 0f, h = 0f;
 
@@ -394,9 +411,9 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         if (LabelPaint is null)
             return new Size(0f, 0f);
 
-        var labeler = GetActualLabeler();
-
         double step = this.GetIdealStep(size);
+
+        var labeler = GetActualLabeler(step);
 
         var start = Math.Floor(Min / step) * step;
 
@@ -442,18 +459,24 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         {
             var subSeparator = subSeparators[j];
 
-            var kl = (j + 1) / (double)SeparatorCount!.Value;
+            var kl = (j + 1) / (double)(SeparatorCount!.Value + 1);
 
             float xs = 0f, ys = 0f;
             if (Orientation == AxisOrientation.X)
             {
                 xs = scaler.MeasureInPixels(step * kl);
-                if (x + xs >= lxj || x + xs <= lxi) continue;
+                if (x + xs >= lxj || x + xs <= lxi)
+                {
+                    visualState = VisualState.Remove;
+                }
             }
             else
             {
                 ys = scaler.MeasureInPixels(step * kl);
-                if (y - ys >= lyj || y - ys <= lyi) continue;
+                if (y - ys >= lyj || y - ys <= lyi)
+                {
+                    visualState = VisualState.Remove;
+                }
             }
 
             UpdateSeparator(lxi, lxj, lyi, lyj, x + xs, y - ys, subSeparator, visualState);
@@ -525,23 +548,28 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         float lyj,
         VisualState visualState)
     {
-        System.Diagnostics.Debug.WriteLine($"Step: {step}");
         for (var j = 0; j < subticks.Length; j++)
         {
             var subtick = subticks[j];
 
-            var kl = (j + 1) / (double)SeparatorCount!.Value;
+            var kl = (j + 1) / (double)(SeparatorCount!.Value + 1);
 
             float xs = 0f, ys = 0f;
             if (Orientation == AxisOrientation.X)
             {
                 xs = scaler.MeasureInPixels(step * kl);
-                if (x + xs >= lxj || x + xs <= lxi) continue;
+                if (x + xs >= lxj || x + xs <= lxi)
+                {
+                    visualState = VisualState.Remove;
+                }
             }
             else
             {
                 ys = scaler.MeasureInPixels(step * kl);
-                if (y - ys >= lyj || y - ys <= lyi) continue;
+                if (y - ys >= lyj || y - ys <= lyi)
+                {
+                    visualState = VisualState.Remove;
+                }
             }
 
             UpdateTick(2.5f, x + xs, y - ys, subtick, visualState);
