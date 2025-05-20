@@ -7,54 +7,6 @@ using Core.Primitive;
 
 namespace Core.Kernel.Series;
 
-public abstract class CoreSeries : ChartElement
-{
-
-}
-
-// Cartesian系列需要
-public abstract class CoreCartesianSeries : CoreSeries
-{
-    private int _xIndex;
-    private int _yIndex;
-
-    public int XIndex
-    {
-        get => _xIndex;
-        set => _xIndex = value;
-    }
-
-    public int YIndex
-    {
-        get => _yIndex;
-        set => _yIndex = value;
-    }
-
-    public Paint? LinePaint { get; set; }
-
-    public abstract IEnumerable<Coordinate> Fetch();
-
-    public virtual SeriesBound GetBound()
-    {
-        var primaryBound = new Bound(0d, 0d);
-        var secondaryBound = new Bound(0d, 0d);
-        foreach (var item in Fetch())
-        {
-            primaryBound.AppendValue(item.X);
-            secondaryBound.AppendValue(item.Y);
-        }
-
-        primaryBound.Expand(0.15);
-        secondaryBound.Expand(0.15);
-
-        return new SeriesBound()
-        {
-            PrimaryBound = primaryBound,
-            SecondaryBound = secondaryBound
-        };
-    }
-}
-
 public abstract class CoreLineSeries : CoreCartesianSeries
 {
     private float _lineSmoothness;
@@ -101,8 +53,68 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
             new Point(drawnLocation.X, secondaryAxis.LabelDesiredRect.Y),
             secondaryAxis.NameDesiredRect.Size);
 
-        var coordinates = Fetch();
 
+        var coors = Fetch().ToList();
+
+        int GetIndex(double val)
+        {
+            int index = (int)(val / SampleInterval!.Value);
+            return index;
+        }
+
+        Bound GetBound(int i1, int i2)
+        {
+            double min = double.MaxValue, max = double.MinValue;
+            for (int i = i1; i <= i2; i++)
+            {
+                if (min > coors[i].Y) min = coors[i].Y;
+                if (max < coors[i].Y) max = coors[i].Y;
+            }
+
+            return new(min, max);
+        }
+
+
+        var width = primaryAxis.Max - primaryAxis.Min;
+        var countPerPx =
+            (width / SampleInterval!.Value) // 需要多少像素
+            / primaryAxis.NameDesiredRect.Width; // 当前像素是否大于总像素
+
+
+        var coordinates = new List<Coordinate>();
+
+        if (countPerPx > 1)
+        {
+            double unitsPerPx = width / primaryAxis.NameDesiredRect.Width;
+
+            for (int i = 0; i < primaryAxis.NameDesiredRect.Width; i++)
+            {
+                float px = primaryAxis.LabelDesiredRect.X + i;
+                double min = primaryScaler.ToValue(px);
+                double max = min + Math.Abs(unitsPerPx);
+
+                int i1 = GetIndex(min);
+                int i2 = GetIndex(max);
+
+                if (i1 < 0 || i2 > (coors.Count - 1)) continue;
+
+                var bound = GetBound(i1, i2);
+
+                coordinates.Add(new(min, bound.Maximum));
+            }
+        }
+        else
+        {
+            int i1 = GetIndex(primaryAxis.Min);
+            int i2 = GetIndex(primaryAxis.Max);
+
+            for (int i = i1; i <= i2; i++)
+            {
+                if (i < 0 || i > (coors.Count - 1)) continue;
+
+                coordinates.Add(coors[i]);
+            }
+        }
 
         if (LinePaint is null) return;
 
@@ -165,6 +177,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
             #endregion
 
+            #region Mark
             if (StrokeGeometryPaint is not null)
             {
                 if (seriesVisual.StrokeVisual is null)
@@ -194,10 +207,12 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
                 FillGeometryPaint.ZIndex = 999;
                 chart.Canvas.AddDrawnTask(FillGeometryPaint, seriesVisual.FillVisual);
             }
+            #endregion
 
             _ = g.Add(seriesVisual);
         }
 
+        #region Old Remove
         foreach (var item in _caches.ToArray())
         {
             var seriesVisual = item.Value;
@@ -225,6 +240,8 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
             _caches.Remove(item.Key);
         }
+
+        #endregion
     }
 
     private void UpdateVisual(
