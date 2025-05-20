@@ -90,8 +90,8 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
             var yAxis = YAxes[series.YIndex];
             var seriesBound = series.GetBound();
 
-            if (seriesBound.PrimaryaryBound is not null)
-                xAxis.SetBound(seriesBound.PrimaryaryBound.Minimum, seriesBound.PrimaryaryBound.Maximum);
+            if (seriesBound.PrimaryBound is not null)
+                xAxis.SetBound(seriesBound.PrimaryBound.Minimum, seriesBound.PrimaryBound.Maximum);
 
             if (seriesBound.SecondaryBound is not null)
                 yAxis.SetBound(seriesBound.SecondaryBound.Minimum, seriesBound.SecondaryBound.Maximum);

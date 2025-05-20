@@ -36,17 +36,17 @@ public abstract class CoreCartesianSeries : CoreSeries
 
     public virtual SeriesBound GetBound()
     {
-        var primaryaryBound = new Bound(0d, 0d);
+        var primaryBound = new Bound(0d, 0d);
         var secondaryBound = new Bound(0d, 0d);
         foreach (var item in Fetch())
         {
-            primaryaryBound.AppendValue(item.X);
+            primaryBound.AppendValue(item.X);
             secondaryBound.AppendValue(item.Y);
         }
 
         return new SeriesBound()
         {
-            PrimaryaryBound = primaryaryBound,
+            PrimaryBound = primaryBound,
             SecondaryBound = secondaryBound
         };
     }
