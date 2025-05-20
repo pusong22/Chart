@@ -44,6 +44,9 @@ public abstract class CoreCartesianSeries : CoreSeries
             secondaryBound.AppendValue(item.Y);
         }
 
+        primaryBound.Expand(0.15);
+        secondaryBound.Expand(0.15);
+
         return new SeriesBound()
         {
             PrimaryBound = primaryBound,
