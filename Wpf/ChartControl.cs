@@ -103,14 +103,8 @@ public abstract class ChartControl : UserControl, IChartView
 
     public void InvokeUIThread(Action action)
     {
-        if (Dispatcher.CheckAccess())
-        {
-            action();
-        }
-        else
-        {
-            _ = Dispatcher.BeginInvoke(action);
-        }
+        if (!IsEnabled) return;
+        _ = Dispatcher.BeginInvoke(action);
     }
 
     private void OnLoad(object sender, RoutedEventArgs e)

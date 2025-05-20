@@ -59,14 +59,8 @@ public abstract partial class ChartControl : UserControl, IChartView
 
     public void InvokeUIThread(Action action)
     {
-        if (InvokeRequired)
-        {
-            _ = BeginInvoke(action);
-        }
-        else
-        {
-            action();
-        }
+        if (!IsHandleCreated) return;
+        _ = BeginInvoke(action);
     }
 
     protected override void OnLoad(EventArgs e)
