@@ -23,7 +23,7 @@ public abstract class CoreLineSeries : CoreCartesianSeries
     }
 
     public float VisualGeometrySize { get; set; }
-    public double? SampleInterval { get; set; }
+    public double SampleInterval { get; set; } = 1d;
 }
 
 public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollection<TValueType>? values) : CoreLineSeries
@@ -58,7 +58,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
         int GetIndex(double val)
         {
-            int index = (int)(val / SampleInterval!.Value);
+            int index = (int)(val / SampleInterval);
             return index;
         }
 
@@ -77,7 +77,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
         var width = primaryAxis.Max - primaryAxis.Min;
         var countPerPx =
-            (width / SampleInterval!.Value) // 需要多少像素
+            (width / SampleInterval) // 需要多少像素
             / primaryAxis.NameDesiredRect.Width; // 当前像素是否大于总像素
 
 
@@ -116,15 +116,15 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
             }
         }
 
-        if (LinePaint is null) return;
+        if (SeriesPaint is null) return;
 
         if (_vectorGeometry is null)
         {
             _vectorGeometry = new TPath();
 
-            LinePaint.Style = PaintStyle.Stroke;
+            SeriesPaint.Style = PaintStyle.Stroke;
             _vectorGeometry.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
-            chart.Canvas.AddDrawnTask(LinePaint, _vectorGeometry);
+            chart.Canvas.AddDrawnTask(SeriesPaint, _vectorGeometry);
         }
 
         _vectorGeometry.Segments.Clear();
@@ -309,7 +309,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
         foreach (var value in values.Cast<TValueType>())
         {
-            yield return parser(index * SampleInterval!.Value, value!);
+            yield return parser(index * SampleInterval, value!);
             index++;
         }
     }

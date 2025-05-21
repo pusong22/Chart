@@ -1,6 +1,5 @@
 using Core.Helper;
 using Core.Kernel.Axis;
-using Core.Kernel.Painting;
 using Core.Kernel.Series;
 using SkiaSharpBackend;
 using SkiaSharpBackend.Drawing;
@@ -14,14 +13,14 @@ public class ChartViewModel
     }
 
     public CoreAxis[] XAxes { get; set; } = [
-        new Axis() { Name = "Time", ShowSeparatorLine = true, DrawTickPath = true, LabelRotation = -45 }
+        new Axis() { Name = "Time", SeparatorPaint = null, SubSeparatorPaint = null, }
 
 
     ];
 
     public CoreAxis[] YAxes { get; set; } = [
-        new Axis() { Name = "Magnitude", ShowSeparatorLine = false, DrawTickPath = true , LabelRotation = -45},
-        //new Axis() { Name = "Y Axis2", ShowSeparatorLine = false, DrawTickPath = false }
+        new Axis() { Name = "Magnitude", },
+        //new Axis() { Name = "Y Axis2", ShowSeparatorLine = false, DrawLine = false }
 
 
     ];
@@ -29,9 +28,7 @@ public class ChartViewModel
     public CoreLineSeries[] Series { get; set; } = [
         new LineSeries<double>(Fetch().ToList())
         {
-            StrokeGeometryPaint = new Paint() { IsAntialias = true, Color = new(0, 0, 255)  },
-            FillGeometryPaint = new Paint() { IsAntialias = true, Color = new(255, 255, 255) },
-            LineSmoothness = 0.5f,
+            LineSmoothness = 0.85f,
             VisualGeometrySize = 20f,
             SampleInterval = 1/10d,
         },

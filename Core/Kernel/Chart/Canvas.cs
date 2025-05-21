@@ -43,7 +43,7 @@ public class Canvas
                         geometry.RemoveMotion();
 
                     geometry.CurrentTime = frameTime;
-                  
+
                     context.Draw(geometry);
 
                     if (geometry.Remove)

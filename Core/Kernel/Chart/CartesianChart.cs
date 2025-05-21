@@ -56,36 +56,8 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
 
         Series = s.Cast<CoreCartesianSeries>().ToArray();
 
-        foreach (var axis in XAxes)
-        {
-            if (instance != axis.Tag)
-            {
-                instance.ApplyStyleToAxis(axis);
-                axis.Tag = instance;
-            }
-
-            axis.Reset(AxisOrientation.X);
-        }
-
-        foreach (var axis in YAxes)
-        {
-            if (instance != axis.Tag)
-            {
-                instance.ApplyStyleToAxis(axis);
-                axis.Tag = instance;
-            }
-
-            axis.Reset(AxisOrientation.Y);
-        }
-
         foreach (var series in Series)
         {
-            if (instance != series.Tag)
-            {
-                instance.ApplyStyleToSeries(series);
-                series.Tag = instance;
-            }
-
             var xAxis = XAxes[series.XIndex];
             var yAxis = YAxes[series.YIndex];
             var seriesBound = series.GetBound();
@@ -97,6 +69,15 @@ public class CartesianChart(ICartesianChartView view, Canvas canvas)
                 yAxis.SetBound(seriesBound.SecondaryBound.Minimum, seriesBound.SecondaryBound.Maximum);
         }
 
+        foreach (var axis in XAxes)
+        {
+            axis.Reset(AxisOrientation.X);
+        }
+
+        foreach (var axis in YAxes)
+        {
+            axis.Reset(AxisOrientation.Y);
+        }
 
         BaseLayoutStrategy layoutStrategy = view.LayoutKind switch
         {

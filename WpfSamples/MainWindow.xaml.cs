@@ -1,5 +1,5 @@
-using WpfSamples.ViewModel;
 using System.Windows;
+using WpfSamples.ViewModel;
 
 namespace WpfSamples;
 /// <summary>

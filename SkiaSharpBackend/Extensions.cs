@@ -1,7 +1,5 @@
 using Core.Helper;
-using Core.Kernel.Axis;
 using Core.Kernel.Painting;
-using Core.Kernel.Series;
 using Core.Primitive;
 using SkiaSharp;
 
@@ -22,7 +20,7 @@ public static class Extensions
         {
             PaintStyle.Fill => SKPaintStyle.Fill,
             PaintStyle.Stroke => SKPaintStyle.Stroke,
-            _ => SKPaintStyle.Fill,
+            _ => SKPaintStyle.Stroke,
         };
     }
 
@@ -61,53 +59,6 @@ public static class Extensions
     public static void UseDefault(this ChartConfig chartConfig)
     {
         chartConfig.SetProvider(new SkiaSharpProvider());
-
-        // TODO: paint的Style根据不同功能自动设置
-        chartConfig.ApplyStyle(config =>
-        {
-            config
-            .AddRuleForAxes(axis =>
-            {
-                axis.NameSize ??= 16f;
-                axis.LabelSize ??= 16f;
-                axis.NameRotation ??= 0f;
-                axis.LabelRotation ??= 0f;
-                axis.NamePaint ??= new Paint();
-                axis.LabelPaint ??= new Paint();
-                axis.NamePadding ??= new Padding(5f);
-                axis.LabelPadding ??= new Padding(15f);
-                axis.Labeler ??= v => v.ToString($"N1");
-                if (axis is CoreCartesianAxis cartesianAxis)
-                {
-                    cartesianAxis.ShowSeparatorLine ??= true;
-                    cartesianAxis.LabelDensity ??= 1f;
-                    cartesianAxis.TickLength ??= 5f;
-                    cartesianAxis.DrawTickPath ??= true;
-                    cartesianAxis.SeparatorCount ??= 5;
-                    cartesianAxis.TickPaint ??= new Paint();
-                    cartesianAxis.SubTickPaint ??= new Paint();
-                    cartesianAxis.SeparatorPaint ??= new Paint()
-                    {
-                        PathEffect = new DashEffectSetting([3, 3])
-                    };
-                    cartesianAxis.SubSeparatorPaint ??= new Paint()
-                    {
-                        PathEffect = new DashEffectSetting([3, 3])
-                    };
-                }
-            })
-            .AddRuleForSeries(series =>
-            {
-                if (series is CoreCartesianSeries cartesianSeries)
-                {
-                    cartesianSeries.LinePaint ??= new Paint();
-                }
-                if (series is CoreLineSeries lineSeries)
-                {
-                    lineSeries.SampleInterval ??= 1d;
-                }
-            });
-        });
 
         chartConfig
             .AddValueTypeParser<short>((x, y) => new(y, y))

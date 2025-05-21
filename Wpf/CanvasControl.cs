@@ -15,7 +15,7 @@ public class CanvasControl : UserControl
     public CanvasControl()
     {
         InitializeSkElement();
-        
+
         Canvas.InvalidatedHandler += OnInvalidate;
 
         Unloaded += OnUnLoad;

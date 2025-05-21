@@ -3,7 +3,7 @@ namespace App;
 
 public partial class BezierCurveDemo : Form
 {
-    private Point[] controlPoints = new Point[4];
+    private readonly Point[] controlPoints = new Point[4];
     private int draggingPointIndex = -1;
 
     public BezierCurveDemo()

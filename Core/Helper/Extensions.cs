@@ -13,8 +13,12 @@ public static class Extensions
         animatable.SetMotion(animation, properties);
     }
 
+    public static bool Validate(double val)
+    {
+        return !double.IsNaN(val) && !double.IsInfinity(val);
+    }
+
     public static IEnumerable<double> EnumerateSeparators(
-        this CoreCartesianAxis axis,
         double start,
         double end,
         double step)
@@ -55,7 +59,7 @@ public static class Extensions
 
         var minimum = range / separations;
 
-        var magnitude = Math.Pow(10, Math.Floor(Math.Log(minimum!.Value) / Math.Log(10)));
+        var magnitude = Math.Pow(10, Math.Floor(Math.Log(minimum) / Math.Log(10)));
         // 倍数太大的话需要更大的magnitude来跟上
         var residual = minimum / magnitude;
 
