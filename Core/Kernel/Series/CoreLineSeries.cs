@@ -60,10 +60,13 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
         var coordinates = ReduceDensity(primaryAxis, primaryScaler);
 
-        _vectorGeometry ??= CreatePathGeometry();
-        _vectorGeometry.Segments.Clear();
+        if (_vectorGeometry is null)
+        {
+            chart.CanvasContext.AddDrawnTask(SeriesPaint, out TPath geometry);
+            _vectorGeometry = geometry;
+        }
 
-        chart.CanvasContext.AddDrawnTask(SeriesPaint, _vectorGeometry);
+        _vectorGeometry.Segments.Clear();
 
         var currentVisuals = new HashSet<SeriesVisual>();
 
@@ -202,43 +205,34 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
     private void DrawnFillGeometry(CoreChart chart, Point end, SeriesVisual seriesVisual)
     {
-        if (FillGeometryPaint is not null)
+        if (FillGeometryPaint is null) return;
+
+        if (seriesVisual.FillVisual is null)
         {
-            seriesVisual.FillVisual ??= CreateVisual();
-
-            UpdateVisual(end, seriesVisual.FillVisual, VisualState.Display);
-
-            FillGeometryPaint.Style = PaintStyle.Fill;
-            FillGeometryPaint.ZIndex = 999;
-            chart.CanvasContext.AddDrawnTask(FillGeometryPaint, seriesVisual.FillVisual);
+            chart.CanvasContext.AddDrawnTask(FillGeometryPaint, out TVisual geometry);
+            seriesVisual.FillVisual = geometry;
         }
+
+        UpdateVisual(end, seriesVisual.FillVisual, VisualState.Display);
+
+        FillGeometryPaint.Style = PaintStyle.Fill;
+        FillGeometryPaint.ZIndex = 999;
     }
 
     private void DrawnStrokeGeometry(CoreChart chart, Point end, SeriesVisual seriesVisual)
     {
         if (StrokeGeometryPaint is null) return;
 
-        seriesVisual.StrokeVisual ??= CreateVisual();
+        if (seriesVisual.StrokeVisual is null)
+        {
+            chart.CanvasContext.AddDrawnTask(StrokeGeometryPaint, out TVisual geometry);
+            seriesVisual.StrokeVisual = geometry;
+        }
 
         UpdateVisual(end, seriesVisual.StrokeVisual, VisualState.Display);
 
         StrokeGeometryPaint.Style = PaintStyle.Stroke;
         StrokeGeometryPaint.ZIndex = 1000;
-        chart.CanvasContext.AddDrawnTask(StrokeGeometryPaint, seriesVisual.StrokeVisual);
-    }
-
-    private TPath CreatePathGeometry()
-    {
-        var g = new TPath();
-        g.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
-        return g;
-    }
-
-    private TVisual CreateVisual()
-    {
-        var g = new TVisual();
-        g.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
-        return g;
     }
 
     private void UpdateVisual(
