@@ -1,9 +1,10 @@
 using Core.Kernel.Motion;
 using Core.Kernel.Painting;
 using Core.Primitive;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Core.Kernel.Drawing.Geometry;
-public abstract class DrawnGeometry : Animatable
+public abstract class DrawnGeometry : Animatable, IResettable
 {
     private readonly FloatMotionProperty _opacityProperty;
     private readonly FloatMotionProperty _xProperty;
@@ -56,4 +57,19 @@ public abstract class DrawnGeometry : Animatable
     public abstract void Draw<TDrawnContext>(TDrawnContext context)
         where TDrawnContext : DrawnContext;
     public abstract Size Measure();
+    
+    public virtual bool TryReset()
+    {
+        Remove = false;
+        CurrentTime = long.MaxValue;
+        Motions.Clear();
+
+        Opacity = 1f;
+        X = 0f;
+        Y = 0f;
+        RotateTransform = 0f;
+        Paint = null;
+
+        return true;
+    }
 }

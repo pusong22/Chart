@@ -12,4 +12,11 @@ public abstract class BaseVectoryGeometry<TSegment> : DrawnGeometry
     {
         return new Size(0f, 0f);
     }
+
+    public override bool TryReset()
+    {
+        Segments.Clear();
+
+        return base.TryReset();
+    }
 }

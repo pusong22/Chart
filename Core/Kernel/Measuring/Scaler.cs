@@ -33,14 +33,14 @@ public class Scaler
 
     public float ToPixel(double value)
     {
-        return _flip
+        return !_flip
             ? unchecked(_minPx + (float)((value - _minVal) * _pxPerVal))
             : unchecked(_maxPx - (float)((value - _minVal) * _pxPerVal));
     }
 
     public double ToValue(float pixel)
     {
-        return _flip
+        return !_flip
             ? _minVal + (pixel - _minPx) * _valPerPx
             : _maxVal - (pixel - _minPx) * _valPerPx;
     }

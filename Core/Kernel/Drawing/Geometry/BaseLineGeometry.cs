@@ -1,5 +1,6 @@
 using Core.Kernel.Motion;
 using Core.Primitive;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Core.Kernel.Drawing.Geometry;
 public abstract class BaseLineGeometry : DrawnGeometry
@@ -27,5 +28,13 @@ public abstract class BaseLineGeometry : DrawnGeometry
     public override Size Measure()
     {
         return new Size(Math.Abs(X1 - X), Math.Abs(Y1 - Y));
+    }
+
+    public override bool TryReset()
+    {
+        X1 = 0f;
+        Y1 = 0f;
+
+        return base.TryReset();
     }
 }

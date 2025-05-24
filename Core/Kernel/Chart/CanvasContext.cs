@@ -2,15 +2,20 @@ using Core.Helper;
 using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Painting;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace Core.Kernel.Chart;
+
 public class CanvasContext
 {
     private readonly object _sync = new();
     private readonly Stopwatch _stopWatch = Stopwatch.StartNew();
 
-    private readonly Dictionary<Paint, HashSet<DrawnGeometry>> _paintTask = [];
+    private readonly ConcurrentDictionary<Paint, HashSet<DrawnGeometry>> _paintTask = [];
+
+    private readonly GeometryPoolProvider _geometryProvider = new();
+
     public event EventHandler? InvalidatedHandler;
 
     public bool IsCompleted { get; private set; }
@@ -59,6 +64,8 @@ public class CanvasContext
             {
                 _ = _paintTask[item.Item1].Remove(item.Item2);
 
+                _geometryProvider.Return(item.Item2);
+
                 isCompleted = false;
             }
 
@@ -68,26 +75,25 @@ public class CanvasContext
         }
     }
 
-    public void AddDrawnTask(Paint paint, DrawnGeometry geometry)
+    public void AddDrawnTask<T>(Paint paint, out T geometry) where T : DrawnGeometry, new()
     {
-        if (!_paintTask.TryGetValue(paint, out var g))
-        {
-            g = [];
-            _paintTask.Add(paint, g);
-        }
+        var tasks = _paintTask.GetOrAdd(paint, []);
 
-        _ = g.Add(geometry);
+        geometry = _geometryProvider.Rent<T>();
+
+        SetDefaultAnimation(geometry);
+
+        tasks.Add(geometry);
+    }
+
+    public void SetDefaultAnimation(DrawnGeometry geometry)
+    {
+        geometry.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
     }
 
     public void Invalidate()
     {
         IsCompleted = false;
         InvalidatedHandler?.Invoke(this, null);
-    }
-
-    // TEST
-    public void Clear()
-    {
-        _paintTask.Clear();
     }
 }

@@ -180,7 +180,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
             }
 
 
-            DrawAxisTick(chart, step, scaler, lxi, lxj, lyi, lyj, x, y, axisVisual);
+            DrawAxisTick(chart, x, y, axisVisual);
             DrawAxisSubTick(chart, step, scaler, lxi, lxj, lyi, lyj, x, y, axisVisual);
 
             DrawAxisLabel(chart, label, x, y, axisVisual);
@@ -242,30 +242,17 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         #endregion
     }
 
-    private TLineGeometry CreateLineGeometry()
-    {
-        var g = new TLineGeometry();
-        g.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
-        return g;
-    }
-
-    private TLabelGeometry CreateLabelGeometry()
-    {
-        var g = new TLabelGeometry();
-        g.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
-        return g;
-    }
-
-    private void DrawAxisTick(CoreChart chart, double step, Scaler scaler, float lxi, float lxj, float lyi, float lyj, float x, float y, AxisVisual axisVisual)
+    private void DrawAxisTick(CoreChart chart, float x, float y, AxisVisual axisVisual)
     {
         if (TickPaint is null) return;
 
-        axisVisual.Tick ??= CreateLineGeometry();
+        if (axisVisual.Tick is null)
+        {
+            chart.CanvasContext.AddDrawnTask(TickPaint, out TLineGeometry geometry);
+            axisVisual.Tick = geometry;
+        }
 
         UpdateTick(TickLength, x, y, axisVisual.Tick, VisualState.Display);
-
-        chart.CanvasContext.AddDrawnTask(TickPaint, axisVisual.Tick);
-
     }
 
     private void DrawAxisSubTick(CoreChart chart, double step, Scaler scaler, float lxi, float lxj, float lyi, float lyj, float x, float y, AxisVisual axisVisual)
@@ -278,27 +265,25 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
             for (var j = 0; j < SeparatorCount; j++)
             {
-                axisVisual.SubTick[j] = CreateLineGeometry();
+                chart.CanvasContext.AddDrawnTask(SubTickPaint, out TLineGeometry geometry);
+                axisVisual.SubTick[j] = geometry;
             }
         }
 
         UpdateSubticks(axisVisual.SubTick, scaler, step, x, y, lxi, lxj, lyi, lyj, VisualState.Display);
-
-        for (var j = 0; j < SeparatorCount; j++)
-        {
-            chart.CanvasContext.AddDrawnTask(SubTickPaint, axisVisual.SubTick[j]);
-        }
     }
 
     private void DrawAxisSeparator(CoreChart chart, float lxi, float lxj, float lyi, float lyj, float x, float y, AxisVisual axisVisual)
     {
         if (SeparatorPaint is null) return;
 
-        axisVisual.Separator ??= CreateLineGeometry();
+        if (axisVisual.Separator is null)
+        {
+            chart.CanvasContext.AddDrawnTask(SeparatorPaint, out TLineGeometry geometry);
+            axisVisual.Separator = geometry;
+        }
 
         UpdateSeparator(lxi, lxj, lyi, lyj, x, y, axisVisual.Separator, VisualState.Display);
-
-        chart.CanvasContext.AddDrawnTask(SeparatorPaint, axisVisual.Separator);
     }
 
     private void DrawAxisSubSeparator(CoreChart chart, double step, Scaler scaler, float lxi, float lxj, float lyi, float lyj, float x, float y, AxisVisual axisVisual)
@@ -311,27 +296,24 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
             for (var j = 0; j < SeparatorCount; j++)
             {
-                axisVisual.SubSeparator[j] = CreateLineGeometry();
+                chart.CanvasContext.AddDrawnTask(SubSeparatorPaint, out TLineGeometry geometry);
+                axisVisual.SubSeparator[j] = geometry;
             }
         }
 
         UpdateSubSeparator(axisVisual.SubSeparator, scaler, step, x, y,
             lxi, lxj, lyi, lyj, VisualState.Display);
-
-        for (var j = 0; j < SeparatorCount; j++)
-        {
-            chart.CanvasContext.AddDrawnTask(SubSeparatorPaint, axisVisual.SubSeparator[j]);
-        }
     }
 
     private void DrawAxisLabel(CoreChart chart, string label, float x, float y, AxisVisual axisVisual)
     {
         if (LabelPaint is null) return;
 
-        axisVisual.Label ??= CreateLabelGeometry();
-
-        chart.CanvasContext.AddDrawnTask(LabelPaint, axisVisual.Label);
-
+        if (axisVisual.Label is null)
+        {
+            chart.CanvasContext.AddDrawnTask(LabelPaint, out TLabelGeometry geometry);
+            axisVisual.Label = geometry;
+        }
 
         UpdateLabel(label, x, y, axisVisual.Label, VisualState.Display);
     }
@@ -340,9 +322,11 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
     {
         if (NamePaint is null || Name is null) return;
 
-        _nameGeometry ??= CreateLabelGeometry();
-
-        chart.CanvasContext.AddDrawnTask(NamePaint, _nameGeometry);
+        if (_nameGeometry is null)
+        {
+            chart.CanvasContext.AddDrawnTask(NamePaint, out TLabelGeometry geometry);
+            _nameGeometry = geometry;
+        }
 
         _nameGeometry.Text = Name;
         _nameGeometry.TextSize = NameSize;
@@ -357,9 +341,11 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
     {
         if (AxisLinePaint is null) return;
 
-        _tickPath ??= CreateLineGeometry();
-
-        chart.CanvasContext.AddDrawnTask(TickPaint!, _tickPath);
+        if (_tickPath is null)
+        {
+            chart.CanvasContext.AddDrawnTask(AxisLinePaint, out TLineGeometry geometry);
+            _tickPath = geometry;
+        }
 
         if (Orientation == AxisOrientation.X)
         {
