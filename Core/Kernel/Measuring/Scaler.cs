@@ -1,52 +1,28 @@
-using Core.Kernel.Axis;
-using Core.Primitive;
-
 namespace Core.Kernel.Measuring;
 public class Scaler
 {
-    private readonly float _minPx, _maxPx, _deltaPx;
-    private readonly double _minVal, _maxVal, _deltaVal;
+    private readonly float _minPx, _maxPx;
+    private readonly double _minVal, _maxVal;
 
     private readonly double _valPerPx, _pxPerVal;
 
-    private readonly AxisOrientation _orientation;
+    private readonly bool _flip;
 
-    public Scaler(CoreCartesianAxis axis, Point p, Size s)
-        : this(axis, new Rect(p, s)) { }
-
-
-    public Scaler(CoreCartesianAxis axis, Rect dataRect)
+    public Scaler(bool flip, float start, float end, double min, double max)
     {
-        if (axis.Orientation == AxisOrientation.Unknown)
-            throw new Exception("The axis is not ready to be scaled.");
+        _flip = flip;
 
-        _orientation = axis.Orientation;
+        _minPx = start;
+        _maxPx = end;
 
-        if (axis.Orientation == AxisOrientation.X)
-        {
-            _minPx = dataRect.X;
-            _maxPx = dataRect.X + dataRect.Width;
-        }
-        else
-        {
-            _minPx = dataRect.Y;
-            _maxPx = dataRect.Y + dataRect.Height;
-        }
+        _minVal = min;
+        _maxVal = max;
 
-        _deltaPx = _maxPx - _minPx;
+        var deltaPx = _maxPx - _minPx;
+        var deltaVal = _maxVal - _minVal;
 
-        _minVal = axis.Min;
-        _maxVal = axis.Max;
-        _deltaVal = _maxVal - _minVal;
-
-        _valPerPx = _deltaVal / _deltaPx;
-        _pxPerVal = _deltaPx / _deltaVal;
-
-        if (double.IsNaN(_valPerPx) && double.IsInfinity(_valPerPx))
-        {
-            _valPerPx = 0d;
-            _pxPerVal = 0d;
-        }
+        _valPerPx = deltaVal / deltaPx;
+        _pxPerVal = deltaPx / deltaVal;
     }
 
     public float MeasureInPixels(double value)
@@ -57,14 +33,14 @@ public class Scaler
 
     public float ToPixel(double value)
     {
-        return _orientation == AxisOrientation.X
+        return _flip
             ? unchecked(_minPx + (float)((value - _minVal) * _pxPerVal))
             : unchecked(_maxPx - (float)((value - _minVal) * _pxPerVal));
     }
 
     public double ToValue(float pixel)
     {
-        return _orientation == AxisOrientation.X
+        return _flip
             ? _minVal + (pixel - _minPx) * _valPerPx
             : _maxVal - (pixel - _minPx) * _valPerPx;
     }

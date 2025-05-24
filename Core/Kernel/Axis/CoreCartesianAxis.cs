@@ -18,7 +18,6 @@ public abstract class CoreCartesianAxis : CoreAxis
     public AxisOrientation Orientation { get; protected internal set; }
     public AxisPosition Position { get; set; }
 
-    // 保存测量大小
     public float X { get; protected internal set; }
     public float Y { get; protected internal set; }
 
@@ -117,13 +116,13 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         var drawLocation = chart.DrawnLocation;
         var drawSize = chart.DrawnSize;
 
-        double step = this.GetIdealStep(NameDesiredRect.Size);
+        bool flip = Orientation == AxisOrientation.Y;
+        float start = flip ? LabelDesiredRect.Y : LabelDesiredRect.X;
+        float end = flip
+            ? LabelDesiredRect.Y + NameDesiredRect.Height
+            : LabelDesiredRect.X + NameDesiredRect.Width;
 
-        var start = Math.Floor(Min / step) * step;
-        Min = start;
-
-        var scaler = new Scaler(this, LabelDesiredRect.Location, NameDesiredRect.Size);
-        var labeler = GetActualLabeler(step);
+        var scaler = new Scaler(flip, start, end, Min, Max);
 
         float lxi = drawLocation.X;
         float lxj = drawLocation.X + drawSize.Width;
@@ -150,8 +149,15 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         DrawAxisLine(chart, xo, yo);
 
-        foreach (var i in Extensions.EnumerateSeparators(start, Max, step))
+        double step = this.GetIdealStep(NameDesiredRect.Size);
+
+        var startOffset = Math.Floor(Min / step) * step;
+        var labeler = GetActualLabeler();
+
+        foreach (var i in Extensions.EnumerateSeparators(startOffset, Max, step))
         {
+            if (i < Min || i > Max) continue;
+
             string label = labeler(i);
 
             float x, y;
@@ -258,7 +264,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         UpdateTick(TickLength, x, y, axisVisual.Tick, VisualState.Display);
 
-        chart.Canvas.AddDrawnTask(TickPaint, axisVisual.Tick);
+        chart.CanvasContext.AddDrawnTask(TickPaint, axisVisual.Tick);
 
     }
 
@@ -280,7 +286,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         for (var j = 0; j < SeparatorCount; j++)
         {
-            chart.Canvas.AddDrawnTask(SubTickPaint, axisVisual.SubTick[j]);
+            chart.CanvasContext.AddDrawnTask(SubTickPaint, axisVisual.SubTick[j]);
         }
     }
 
@@ -292,7 +298,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         UpdateSeparator(lxi, lxj, lyi, lyj, x, y, axisVisual.Separator, VisualState.Display);
 
-        chart.Canvas.AddDrawnTask(SeparatorPaint, axisVisual.Separator);
+        chart.CanvasContext.AddDrawnTask(SeparatorPaint, axisVisual.Separator);
     }
 
     private void DrawAxisSubSeparator(CoreChart chart, double step, Scaler scaler, float lxi, float lxj, float lyi, float lyj, float x, float y, AxisVisual axisVisual)
@@ -314,7 +320,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         for (var j = 0; j < SeparatorCount; j++)
         {
-            chart.Canvas.AddDrawnTask(SubSeparatorPaint, axisVisual.SubSeparator[j]);
+            chart.CanvasContext.AddDrawnTask(SubSeparatorPaint, axisVisual.SubSeparator[j]);
         }
     }
 
@@ -324,7 +330,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         axisVisual.Label ??= CreateLabelGeometry();
 
-        chart.Canvas.AddDrawnTask(LabelPaint, axisVisual.Label);
+        chart.CanvasContext.AddDrawnTask(LabelPaint, axisVisual.Label);
 
 
         UpdateLabel(label, x, y, axisVisual.Label, VisualState.Display);
@@ -336,7 +342,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         _nameGeometry ??= CreateLabelGeometry();
 
-        chart.Canvas.AddDrawnTask(NamePaint, _nameGeometry);
+        chart.CanvasContext.AddDrawnTask(NamePaint, _nameGeometry);
 
         _nameGeometry.Text = Name;
         _nameGeometry.TextSize = NameSize;
@@ -353,7 +359,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         _tickPath ??= CreateLineGeometry();
 
-        chart.Canvas.AddDrawnTask(TickPaint!, _tickPath);
+        chart.CanvasContext.AddDrawnTask(TickPaint!, _tickPath);
 
         if (Orientation == AxisOrientation.X)
         {
@@ -373,26 +379,9 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         }
     }
 
-    private Func<double, string> GetActualLabeler(double step)
+    private Func<double, string> GetActualLabeler()
     {
-        return Labeler = t =>
-        {
-            int decimalPlaces = GetDecimalPlaces(step) + 1;
-            return t.ToString($"N{decimalPlaces}");
-        };
-    }
-
-    private int GetDecimalPlaces(double value)
-    {
-        // 限制最多 10 位，避免精度浮动误差
-        for (int i = 0; i < 10; i++)
-        {
-            double scaled = value * Math.Pow(10, i);
-            if (Math.Abs(scaled - Math.Round(scaled)) < 1e-8)
-                return i;
-        }
-
-        return 10; // fallback 最大精度
+        return Labeler ??= t => t.ToString("N10");
     }
 
     public override Size MeasureNameLabelSize()
@@ -409,6 +398,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
             Padding = NamePadding
         };
 
+        // TODO: 性能
         return _nameGeometry.Measure();
     }
 
@@ -420,7 +410,7 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
         const double testSeparators = 25;
         double step = (Max - Min) / testSeparators;
 
-        return MeasureLabelInternal(step, Extensions.EnumerateSeparators(Min, Max, step));
+        return MeasureLabelInternal(Extensions.EnumerateSeparators(Min, Max, step));
     }
 
     public override Size MeasureLabelSize(Size size)
@@ -432,12 +422,12 @@ public abstract class CoreCartesianAxis<TLabelGeometry, TLineGeometry> : CoreCar
 
         var start = Math.Floor(Min / step) * step;
 
-        return MeasureLabelInternal(step, Extensions.EnumerateSeparators(start, Max, step));
+        return MeasureLabelInternal(Extensions.EnumerateSeparators(start, Max, step));
     }
 
-    private Size MeasureLabelInternal(double step, IEnumerable<double> separatorGenerator)
+    private Size MeasureLabelInternal(IEnumerable<double> separatorGenerator)
     {
-        var labeler = GetActualLabeler(step);
+        var labeler = GetActualLabeler();
 
         float w = 0f, h = 0f;
 

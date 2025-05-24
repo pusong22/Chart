@@ -1,5 +1,6 @@
 using Core.Helper;
 using Core.Kernel.Axis;
+using Core.Kernel.Painting;
 using Core.Kernel.Series;
 using SkiaSharpBackend;
 using SkiaSharpBackend.Drawing;
@@ -13,13 +14,13 @@ public class ChartViewModel
     }
 
     public CoreAxis[] XAxes { get; set; } = [
-        new Axis() { Name = "Time", SeparatorPaint = null, SubSeparatorPaint = null, }
+        new Axis() { Name = "Time", Labeler=l=>l.ToString("N2"),TickPaint = new Pen() }
 
 
     ];
 
     public CoreAxis[] YAxes { get; set; } = [
-        new Axis() { Name = "Magnitude", },
+        new Axis() { Name = "Magnitude", Labeler=l=>l.ToString("N2"),TickPaint = new Pen() },
         //new Axis() { Name = "Y Axis2", ShowSeparatorLine = false, DrawLine = false }
 
 
