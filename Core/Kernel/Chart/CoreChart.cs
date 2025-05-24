@@ -2,18 +2,16 @@ using Core.Kernel.View;
 using Core.Primitive;
 
 namespace Core.Kernel.Chart;
-public abstract class CoreChart(IChartView view, Canvas canvas)
+public abstract class CoreChart(IChartView view)
 {
-    private readonly object _sync = new();
-
-    public Canvas Canvas { get; } = canvas;
+    public CanvasContext CanvasContext { get; private set; } = view.CanvasContext;
     public Point DrawnLocation { get; protected internal set; }
     public Size DrawnSize { get; protected internal set; }
     public bool IsLoad { get; private set; }
-    public Size ControlSize { get; private set; }
-
+    public Size ControlSize { get; private set; } = view.ControlSize;
 
     protected abstract void Measure();
+
     protected abstract void Invalidate();
 
     public void Load()
@@ -29,15 +27,17 @@ public abstract class CoreChart(IChartView view, Canvas canvas)
 
     public void Update()
     {
+        if (!IsLoad) return;
+
         view.InvokeUIThread(() =>
         {
-            lock (_sync)
-            {
-                ControlSize = view.ControlSize;
-                Measure();
-                Invalidate();
-                Canvas.Invalidate();
-            }
+            CanvasContext = view.CanvasContext;
+            ControlSize = view.ControlSize;
+
+            Measure();
+            Invalidate();
+
+            CanvasContext.Invalidate();
         });
     }
 }

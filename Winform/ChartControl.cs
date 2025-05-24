@@ -17,17 +17,17 @@ public abstract partial class ChartControl : UserControl, IChartView
         InitializeComponent();
 
         ChartConfig.Configure(config => config.UseDefault());
+
+        Load += OnLoad;
+        Resize += OnResize;
+        HandleDestroyed += OnHandleDestroyed;
     }
 
     protected abstract CoreChart? CoreChart { get; }
 
-    public Core.Primitive.Size ControlSize
-    {
-        get
-        {
-            return new(_canvasControl.ClientSize.Width, _canvasControl.ClientSize.Height);
-        }
-    }
+    public Core.Primitive.Size ControlSize => new(_canvasControl.ClientSize.Width, _canvasControl.ClientSize.Height);
+
+    public CanvasContext CanvasContext => _canvasControl.CanvasContext;
 
     public IEnumerable<CoreAxis>? XAxes
     {
@@ -59,33 +59,21 @@ public abstract partial class ChartControl : UserControl, IChartView
 
     public void InvokeUIThread(Action action)
     {
-        if (!IsHandleCreated) return;
         _ = BeginInvoke(action);
     }
 
-    protected override void OnLoad(EventArgs e)
+    public void OnLoad(object s, EventArgs e)
     {
-        base.OnLoad(e);
-
-        if (CoreChart is null || CoreChart.IsLoad) return;
-        CoreChart.Load();
+        CoreChart?.Load();
     }
 
-    protected override void OnHandleDestroyed(EventArgs e)
+    public void OnHandleDestroyed(object s, EventArgs e)
     {
-        base.OnHandleDestroyed(e);
-
-        if (CoreChart is null || !CoreChart.IsLoad) return;
-        CoreChart.UnLoad();
+        CoreChart?.UnLoad();
     }
 
-    protected override void OnResize(EventArgs e)
+    public void OnResize(object s, EventArgs e)
     {
-        // 手动调用canvasControl的invalidate
-        base.OnResize(e);
-
-        if (CoreChart is null || !CoreChart.IsLoad) return;
-        //_canvasControl.Size = Size;
         CoreChart?.Update();
     }
 }

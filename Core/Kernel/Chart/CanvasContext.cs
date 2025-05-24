@@ -5,7 +5,7 @@ using Core.Kernel.Painting;
 using System.Diagnostics;
 
 namespace Core.Kernel.Chart;
-public class Canvas
+public class CanvasContext
 {
     private readonly object _sync = new();
     private readonly Stopwatch _stopWatch = Stopwatch.StartNew();
@@ -43,7 +43,7 @@ public class Canvas
                         geometry.RemoveMotion();
 
                     geometry.CurrentTime = frameTime;
-                  
+
                     context.Draw(geometry);
 
                     if (geometry.Remove)

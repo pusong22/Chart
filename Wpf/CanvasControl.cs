@@ -15,13 +15,13 @@ public class CanvasControl : UserControl
     public CanvasControl()
     {
         InitializeSkElement();
-        
-        Canvas.InvalidatedHandler += OnInvalidate;
+
+        CanvasContext.InvalidatedHandler += OnInvalidate;
 
         Unloaded += OnUnLoad;
     }
 
-    public Core.Kernel.Chart.Canvas Canvas { get; } = new();
+    public Core.Kernel.Chart.CanvasContext CanvasContext { get; } = new();
 
     private void InitializeSkElement()
     {
@@ -41,19 +41,19 @@ public class CanvasControl : UserControl
     {
         if (!_invalidating) return;
         var context = new SkiaSharpDrawnContext(e.Surface, e.Info);
-        Canvas.DrawFrame(context);
+        CanvasContext.DrawFrame(context);
     }
 
     private void OnPaintGLSurface(object sender, SKPaintGLSurfaceEventArgs e)
     {
         if (!_invalidating) return;
         var context = new SkiaSharpDrawnContext(e.Surface, e.Info);
-        Canvas.DrawFrame(context);
+        CanvasContext.DrawFrame(context);
     }
 
     private void OnUnLoad(object sender, RoutedEventArgs e)
     {
-        Canvas.InvalidatedHandler -= OnInvalidate;
+        CanvasContext.InvalidatedHandler -= OnInvalidate;
     }
 
     private void OnInvalidate(object sender, EventArgs e)
@@ -68,7 +68,7 @@ public class CanvasControl : UserControl
 
         var ts = TimeSpan.FromSeconds(1 / ChartConfig.MaxFPS);
 
-        while (!Canvas.IsCompleted)
+        while (!CanvasContext.IsCompleted)
         {
             _skElement?.InvalidateVisual();
             //_skGLElement?.InvalidateVisual();

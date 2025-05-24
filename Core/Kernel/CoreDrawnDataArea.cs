@@ -52,7 +52,7 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
             {
                 _fillGeometry = new TRectangleGeometry();
                 _fillGeometry.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
-                chart.Canvas.AddDrawnTask(Fill, _fillGeometry);
+                chart.CanvasContext.AddDrawnTask(Fill, _fillGeometry);
             }
 
             _fillGeometry.X = location.X;
@@ -67,7 +67,7 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
             {
                 _strokeGeometry = new TRectangleGeometry();
                 _strokeGeometry.Animate(ChartConfig.AnimateFunc, ChartConfig.AnimateDuration);
-                chart.Canvas.AddDrawnTask(Stroke, _strokeGeometry);
+                chart.CanvasContext.AddDrawnTask(Stroke, _strokeGeometry);
             }
 
             _strokeGeometry.X = location.X;

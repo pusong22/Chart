@@ -31,7 +31,7 @@ namespace Core.Kernel.Layout
                 var nameSize = axis.MeasureNameLabelSize();
                 var labelSize = axis.MeasureLabelSize(chart.ControlSize);
 
-                var temp = nameSize.Height + labelSize.Height;
+                var temp = nameSize.Height + labelSize.Height + axis.TickLength;
 
                 if (labelSize.Width * 0.5f > l) l = labelSize.Width * 0.5f;
                 if (labelSize.Width * 0.5f > r) r = labelSize.Width * 0.5f;
@@ -59,7 +59,7 @@ namespace Core.Kernel.Layout
                 var nameSize = axis.MeasureNameLabelSize();
                 var labelSize = axis.MeasureLabelSize(chart.ControlSize);
 
-                var temp = nameSize.Width + labelSize.Width;
+                var temp = nameSize.Width + labelSize.Width + axis.TickLength;
 
                 if (labelSize.Height * 0.5f > t) t = labelSize.Height * 0.5f;
                 if (labelSize.Height * 0.5f > b) b = labelSize.Height * 0.5f;

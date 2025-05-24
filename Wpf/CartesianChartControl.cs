@@ -22,15 +22,7 @@ public class CartesianChartControl : ChartControl, ICartesianChartView
             "DrawnDataArea",
             typeof(CoreDrawnDataArea),
             typeof(CartesianChartControl),
-            new PropertyMetadata(null,
-                (d, e) =>
-                {
-
-                },
-                (d, e) =>
-                {
-                    return e;
-                }));
+            new PropertyMetadata(null));
 
 
 
@@ -42,7 +34,7 @@ public class CartesianChartControl : ChartControl, ICartesianChartView
     {
         get
         {
-            _coreChart ??= new CartesianChart(this, CanvasControl!.Canvas);
+            _coreChart ??= new CartesianChart(this);
             return _coreChart;
         }
     }

@@ -20,20 +20,20 @@ public partial class CanvasControl : UserControl
         InitializeComponent();
     }
 
-    public Canvas Canvas { get; } = new();
+    public CanvasContext CanvasContext { get; } = new();
 
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
 
-        Canvas.InvalidatedHandler += OnInvalidate;
+        CanvasContext.InvalidatedHandler += OnInvalidate;
     }
 
     protected override void OnHandleDestroyed(EventArgs e)
     {
         base.OnHandleDestroyed(e);
 
-        Canvas.InvalidatedHandler -= OnInvalidate;
+        CanvasContext.InvalidatedHandler -= OnInvalidate;
     }
 
     private void OnInvalidate(object sender, EventArgs e)
@@ -48,7 +48,7 @@ public partial class CanvasControl : UserControl
 
         var ts = TimeSpan.FromSeconds(1 / ChartConfig.MaxFPS);
 
-        while (!Canvas.IsCompleted)
+        while (!CanvasContext.IsCompleted)
         {
             _skControl?.Invalidate();
             //_skGLControl?.Invalidate();
@@ -66,7 +66,7 @@ public partial class CanvasControl : UserControl
         e.Surface.Canvas.Scale(resolution.DpiX, resolution.DpiY);
 
         var context = new SkiaSharpDrawnContext(e.Surface, e.Info);
-        Canvas.DrawFrame(context);
+        CanvasContext.DrawFrame(context);
     }
 
     private void SkglControl_PaintSurface(object sender, SKPaintGLSurfaceEventArgs e)
@@ -76,7 +76,7 @@ public partial class CanvasControl : UserControl
         e.Surface.Canvas.Scale(resolution.DpiX, resolution.DpiY);
 
         var context = new SkiaSharpDrawnContext(e.Surface, e.Info);
-        Canvas.DrawFrame(context);
+        CanvasContext.DrawFrame(context);
     }
 
     private Resolution GetResolution()
