@@ -7,8 +7,7 @@ using Core.Primitive;
 
 namespace Core.Kernel.Chart;
 
-public class CartesianChart(ICartesianChartView view, Canvas canvas)
-    : CoreChart(view, canvas)
+public class CartesianChart(ICartesianChartView view) : CoreChart(view)
 {
     public CoreDrawnDataArea? CoreDrawnDataArea { get; private set; }
 

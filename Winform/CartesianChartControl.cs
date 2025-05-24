@@ -9,13 +9,11 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
     private CoreChart? _coreChart;
     private CoreDrawnDataArea? _drawnDataArea;
 
-
-
     protected override CoreChart CoreChart
     {
         get
         {
-            _coreChart ??= new CartesianChart(this, _canvasControl.Canvas);
+            _coreChart ??= new CartesianChart(this);
             return _coreChart;
         }
     }

@@ -46,15 +46,7 @@ public abstract class ChartControl : UserControl, IChartView
             "Series",
             typeof(IEnumerable<CoreSeries>),
             typeof(ChartControl),
-            new PropertyMetadata(null,
-                (d, e) =>
-                {
-
-                },
-                (d, e) =>
-                {
-                    return e;
-                }));
+            new PropertyMetadata(null));
 
 
     public static readonly DependencyProperty XAxesProperty =
@@ -62,66 +54,42 @@ public abstract class ChartControl : UserControl, IChartView
             "XAxes",
             typeof(IEnumerable<CoreAxis>),
             typeof(ChartControl),
-            new PropertyMetadata(null,
-                (d, e) =>
-                {
-
-                },
-                (d, e) =>
-                {
-                    return e;
-                }));
+            new PropertyMetadata(null));
 
     public static readonly DependencyProperty YAxesProperty =
        DependencyProperty.Register(
            "YAxes",
            typeof(IEnumerable<CoreAxis>),
            typeof(ChartControl),
-           new PropertyMetadata(null,
-               (d, e) =>
-               {
-
-               },
-               (d, e) =>
-               {
-                   return e;
-               }));
+           new PropertyMetadata(null));
 
 
     #endregion
 
-    protected CanvasControl? CanvasControl { get; } = new();
+    protected CanvasControl CanvasControl { get; } = new();
     protected abstract CoreChart? CoreChart { get; }
 
-    public Core.Primitive.Size ControlSize
-    {
-        get
-        {
-            return new((float)CanvasControl!.ActualWidth, (float)CanvasControl!.ActualHeight);
-        }
-    }
+    public Core.Primitive.Size ControlSize => new((float)CanvasControl.ActualWidth, (float)CanvasControl.ActualHeight);
+
+    public CanvasContext CanvasContext => CanvasControl.CanvasContext;
 
     public void InvokeUIThread(Action action)
     {
-        if (!IsEnabled) return;
         _ = Dispatcher.BeginInvoke(action);
     }
 
     private void OnLoad(object sender, RoutedEventArgs e)
     {
-        if (CoreChart is null || CoreChart.IsLoad) return;
-        CoreChart.Load();
+        CoreChart?.Load();
     }
 
     private void OnUnLoad(object sender, RoutedEventArgs e)
     {
-        if (CoreChart is null || !CoreChart.IsLoad) return;
-        CoreChart.UnLoad();
+        CoreChart?.UnLoad();
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (CoreChart is null || !CoreChart.IsLoad) return;
-        CoreChart.Update();
+        CoreChart?.Update();
     }
 }

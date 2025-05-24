@@ -1,10 +1,12 @@
 using Core.Kernel.Axis;
+using Core.Kernel.Chart;
 using Core.Kernel.Series;
 using Core.Primitive;
 
 namespace Core.Kernel.View;
 public interface IChartView
 {
+    CanvasContext CanvasContext { get; }
     Size ControlSize { get; }
 
     IEnumerable<CoreAxis>? XAxes { get; }
