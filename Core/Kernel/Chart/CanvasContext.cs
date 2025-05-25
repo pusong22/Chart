@@ -23,56 +23,75 @@ public class CanvasContext
     public void DrawFrame<TDrawnContext>(TDrawnContext context)
         where TDrawnContext : DrawnContext
     {
+        //if (IsCompleted || _paintTask.Count == 0) 
+        //    return;
+
+        var disabledAnimation = ChartConfig.DisabledAnimation;
+        var isCompleted = true;
+
+        var removeTask = new List<Tuple<Paint, DrawnGeometry>>();
+        context.BeginDraw();
+
+        var frameTime = _stopWatch.ElapsedMilliseconds;
+
+        foreach (var item in _paintTask.OrderBy(x => x.Key.ZIndex))
+        {
+            var paint = item.Key;
+
+            if (paint is null) continue;
+
+            context.InitializePaint(paint);
+
+            foreach (var geometry in item.Value)
+            {
+                if (disabledAnimation)
+                    geometry.RemoveMotion();
+
+                geometry.CurrentTime = frameTime;
+
+                context.Draw(geometry);
+
+                if (geometry.Remove)
+                    removeTask.Add(new Tuple<Paint, DrawnGeometry>(paint, geometry));
+
+                isCompleted = isCompleted && geometry.IsCompleted;
+            }
+
+            context.DisposePaint();
+        }
+
+        foreach (var item in removeTask)
+        {
+            _ = _paintTask[item.Item1].Remove(item.Item2);
+
+            _geometryProvider.Return(item.Item2);
+
+            isCompleted = false;
+        }
+
+        IsCompleted = isCompleted;
+
+        context.EndDraw();
+
         // 
         lock (_sync)
         {
-            var disabledAnimation = ChartConfig.DisabledAnimation;
-            var isCompleted = true;
-
-            var removeTask = new List<Tuple<Paint, DrawnGeometry>>();
-            context.BeginDraw();
-
-            var frameTime = _stopWatch.ElapsedMilliseconds;
-
-            foreach (var item in _paintTask.OrderBy(x => x.Key.ZIndex))
-            {
-                var paint = item.Key;
-
-                if (paint is null) continue;
-
-                context.InitializePaint(paint);
-
-                foreach (var geometry in item.Value)
-                {
-                    if (disabledAnimation)
-                        geometry.RemoveMotion();
-
-                    geometry.CurrentTime = frameTime;
-
-                    context.Draw(geometry);
-
-                    if (geometry.Remove)
-                        removeTask.Add(new Tuple<Paint, DrawnGeometry>(paint, geometry));
-
-                    isCompleted = isCompleted && geometry.IsCompleted;
-                }
-
-                context.DisposePaint();
-            }
-
-            foreach (var item in removeTask)
-            {
-                _ = _paintTask[item.Item1].Remove(item.Item2);
-
-                _geometryProvider.Return(item.Item2);
-
-                isCompleted = false;
-            }
-
             IsCompleted = isCompleted;
-
-            context.EndDraw();
         }
+
+        // TODO: clear all tasks if completed
+        //if (IsCompleted)
+        //{
+        //    foreach (var geometries in _paintTask.Values)
+        //    {
+        //        foreach (var item in geometries)
+        //        {
+        //            _geometryProvider.Return(item);
+        //        }
+        //    }
+
+        //    _paintTask.Clear();
+        //}
     }
 
     public void AddDrawnTask<T>(Paint paint, out T geometry) where T : DrawnGeometry, new()
