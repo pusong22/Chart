@@ -11,16 +11,16 @@ public class CartesianChartControl : ChartControl, ICartesianChartView
 
     #region DP
 
-    public CoreDrawnDataArea CoreDrawnDataArea
+    public CoreDrawnRect CoreDrawnDataArea
     {
-        get { return (CoreDrawnDataArea)GetValue(DrawnDataAreaProperty); }
+        get { return (CoreDrawnRect)GetValue(DrawnDataAreaProperty); }
         set { SetValue(DrawnDataAreaProperty, value); }
     }
 
     public static readonly DependencyProperty DrawnDataAreaProperty =
         DependencyProperty.Register(
-            "DrawnDataArea",
-            typeof(CoreDrawnDataArea),
+            "DrawnRect",
+            typeof(CoreDrawnRect),
             typeof(CartesianChartControl),
             new PropertyMetadata(null));
 

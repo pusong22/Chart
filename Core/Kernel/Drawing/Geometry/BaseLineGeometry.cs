@@ -1,6 +1,5 @@
 using Core.Kernel.Motion;
 using Core.Primitive;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Core.Kernel.Drawing.Geometry;
 public abstract class BaseLineGeometry : DrawnGeometry

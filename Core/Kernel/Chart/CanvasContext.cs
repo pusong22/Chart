@@ -94,15 +94,17 @@ public class CanvasContext
         //}
     }
 
-    public void AddDrawnTask<T>(Paint paint, out T geometry) where T : DrawnGeometry, new()
+    public T RequestGeometry<T>(Paint paint) where T : DrawnGeometry, new()
     {
         var tasks = _paintTask.GetOrAdd(paint, []);
 
-        geometry = _geometryProvider.Rent<T>();
+        var geometry = _geometryProvider.Rent<T>();
 
         SetDefaultAnimation(geometry);
 
         tasks.Add(geometry);
+
+        return geometry;
     }
 
     public void SetDefaultAnimation(DrawnGeometry geometry)

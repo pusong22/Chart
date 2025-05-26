@@ -16,7 +16,7 @@ public partial class Form1 : Form
         Core.Primitive.Color gray = new(169, 169, 169, 169);
         Core.Primitive.Color red = new(255, 0, 0);
 
-        DrawnDataArea area = new()
+        DrawnRect area = new()
         {
             Fill = new Core.Kernel.Painting.Brush() { Color = gray },
             Stroke = new Core.Kernel.Painting.Pen() { Color = red },

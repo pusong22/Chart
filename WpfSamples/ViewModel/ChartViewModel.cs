@@ -14,13 +14,25 @@ public class ChartViewModel
     }
 
     public CoreAxis[] XAxes { get; set; } = [
-        new Axis() { Name = "Time", Labeler=l=>l.ToString("N2"),TickPaint = new Pen() }
+        new Axis() {
+            Name = "Time",
+            AxisLinePaint = new Pen(),
+            SeparatorPaint = new Pen(new DashEffectSetting([3,3])),
+            TickPaint = new Pen(),
+            Labeler=l=>l.ToString("N2"),
+        }
 
 
     ];
 
     public CoreAxis[] YAxes { get; set; } = [
-        new Axis() { Name = "Magnitude", Labeler=l=>l.ToString("N2"),TickPaint = new Pen() },
+        new Axis() {
+            Name = "Magnitude",
+            AxisLinePaint = new Pen(),
+            SeparatorPaint = new Pen(new DashEffectSetting([3,3])),
+            TickPaint = new Pen(),
+            Labeler=l=>l.ToString("N2"),
+        },
         //new Axis() { Name = "Y Axis2", ShowSeparatorLine = false, DrawLine = false }
 
 

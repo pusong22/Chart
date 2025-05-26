@@ -9,7 +9,7 @@ namespace Core.Kernel.Chart;
 
 public class CartesianChart(ICartesianChartView view) : CoreChart(view)
 {
-    public CoreDrawnDataArea? CoreDrawnDataArea { get; private set; }
+    public CoreDrawnRect? CoreDrawnDataArea { get; private set; }
 
     public CoreCartesianAxis[]? XAxes { get; private set; }
     public CoreCartesianAxis[]? YAxes { get; private set; }

@@ -1,4 +1,5 @@
 using Core.Kernel.Axis;
+using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Motion;
 using Core.Primitive;
 
@@ -11,6 +12,20 @@ public static class Extensions
     public static void Animate(this Animatable animatable, Animation animation, params string[]? properties)
     {
         animatable.SetMotion(animation, properties);
+    }
+
+    public static void ChangeVisualState(this DrawnGeometry geometry, VisualState visualState)
+    {
+        switch (visualState)
+        {
+            case VisualState.Display:
+                geometry.Opacity = 1f;
+                break;
+            case VisualState.Remove:
+                geometry.Opacity = 0f;
+                geometry.Remove = true;
+                break;
+        }
     }
 
     public static bool Validate(double val)

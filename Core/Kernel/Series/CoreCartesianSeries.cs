@@ -1,13 +1,9 @@
-using Core.Kernel.Painting;
 using Core.Primitive;
 
 namespace Core.Kernel.Series;
 
-// Cartesian系列需要
 public abstract class CoreCartesianSeries : CoreSeries
 {
-    private Paint? _seriesPaint = new Pen();
-
     private int _xIndex;
     private int _yIndex;
 
@@ -23,17 +19,6 @@ public abstract class CoreCartesianSeries : CoreSeries
         set => _yIndex = value;
     }
 
-    public Paint? SeriesPaint
-    {
-        get => _seriesPaint;
-        set
-        {
-            if (value != _seriesPaint)
-            {
-                _seriesPaint = value;
-            }
-        }
-    }
 
     public abstract IEnumerable<Coordinate> Fetch();
 

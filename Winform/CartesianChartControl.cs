@@ -7,7 +7,7 @@ namespace WinForm;
 public partial class CartesianChartControl : ChartControl, ICartesianChartView
 {
     private CoreChart? _coreChart;
-    private CoreDrawnDataArea? _drawnDataArea;
+    private CoreDrawnRect? _drawnDataArea;
 
     protected override CoreChart CoreChart
     {
@@ -20,7 +20,7 @@ public partial class CartesianChartControl : ChartControl, ICartesianChartView
 
     public LayoutKind LayoutKind { get; set; } = LayoutKind.Stack;
 
-    public CoreDrawnDataArea? CoreDrawnDataArea
+    public CoreDrawnRect? CoreDrawnDataArea
     {
         get => _drawnDataArea;
         set => _drawnDataArea = value;

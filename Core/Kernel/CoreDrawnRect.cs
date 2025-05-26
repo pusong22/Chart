@@ -1,11 +1,9 @@
-using Core.Helper;
 using Core.Kernel.Chart;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Painting;
-using Core.Primitive;
 
 namespace Core.Kernel;
-public abstract class CoreDrawnDataArea : ChartElement
+public abstract class CoreDrawnRect : ChartElement
 {
     private Paint? _fill;
     private Paint? _stroke;
@@ -15,10 +13,10 @@ public abstract class CoreDrawnDataArea : ChartElement
         get => _fill;
         set
         {
-            _fill = value;
-            if (_fill is null) return;
-
-            _fill.Style = PaintStyle.Fill;
+            if (_fill != value)
+            {
+                _fill = value;
+            }
         }
     }
 
@@ -27,19 +25,19 @@ public abstract class CoreDrawnDataArea : ChartElement
         get => _stroke;
         set
         {
-            _stroke = value;
-            if (_stroke is null) return;
-
-            _stroke.Style = PaintStyle.Stroke;
+            if (_stroke != value)
+            {
+                _stroke = value;
+            }
         }
     }
 }
 
-public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
-    where TRectangleGeometry : BaseRectangleGeometry, new()
+public abstract class CoreDrawnDataArea<TRect> : CoreDrawnRect
+    where TRect : BaseRectangleGeometry, new()
 {
-    private TRectangleGeometry? _fillGeometry;
-    private TRectangleGeometry? _strokeGeometry;
+    private TRect? _fillGeometry;
+    private TRect? _strokeGeometry;
 
     public override void Invalidate(CoreChart chart)
     {
@@ -48,11 +46,7 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
 
         if (Fill is not null)
         {
-            if (_fillGeometry is null)
-            {
-                chart.CanvasContext.AddDrawnTask(Fill, out TRectangleGeometry geometry);
-                _fillGeometry = geometry;
-            }
+            _fillGeometry ??= chart.CanvasContext.RequestGeometry<TRect>(Fill);
 
             _fillGeometry.X = location.X;
             _fillGeometry.Y = location.Y;
@@ -62,11 +56,7 @@ public abstract class CoreDrawnDataArea<TRectangleGeometry> : CoreDrawnDataArea
 
         if (Stroke is not null)
         {
-            if (_strokeGeometry is null)
-            {
-                chart.CanvasContext.AddDrawnTask(Stroke, out TRectangleGeometry geometry);
-                _strokeGeometry = geometry;
-            }
+            _strokeGeometry ??= chart.CanvasContext.RequestGeometry<TRect>(Stroke);
 
             _strokeGeometry.X = location.X;
             _strokeGeometry.Y = location.Y;

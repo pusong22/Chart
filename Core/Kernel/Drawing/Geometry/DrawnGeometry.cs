@@ -57,7 +57,7 @@ public abstract class DrawnGeometry : Animatable, IResettable
     public abstract void Draw<TDrawnContext>(TDrawnContext context)
         where TDrawnContext : DrawnContext;
     public abstract Size Measure();
-    
+
     public virtual bool TryReset()
     {
         Remove = false;

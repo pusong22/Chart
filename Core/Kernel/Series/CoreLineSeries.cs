@@ -31,6 +31,26 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
     where TVisual : BaseRectangleGeometry, new()
     where TPath : BaseVectoryGeometry<CubicBezierSegment>, new()
 {
+    private class BezierData(bool head)
+    {
+        public Coordinate Start { get; set; }
+        public Coordinate Control1 { get; set; }
+        public Coordinate Control2 { get; set; }
+        public Coordinate End { get; set; }
+        public bool Head { get; set; } = head;
+    }
+
+    private class SeriesVisual
+    {
+        public Coordinate Start { get; set; }
+        public Coordinate Control1 { get; set; }
+        public Coordinate Control2 { get; set; }
+        public Coordinate End { get; set; }
+
+        public TVisual? StrokeVisual { get; set; }
+        public TVisual? FillVisual { get; set; }
+    }
+
     private readonly Dictionary<Coordinate, SeriesVisual> _caches = [];
 
     private TPath? _vectorGeometry;
@@ -60,15 +80,11 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
         var coordinates = ReduceDensity(primaryAxis, primaryScaler);
 
-        if (_vectorGeometry is null)
-        {
-            chart.CanvasContext.AddDrawnTask(SeriesPaint, out TPath geometry);
-            _vectorGeometry = geometry;
-        }
+        _vectorGeometry ??= chart.CanvasContext.RequestGeometry<TPath>(SeriesPaint);
 
         _vectorGeometry.Segments.Clear();
 
-        var currentVisuals = new HashSet<SeriesVisual>();
+        var currentUsedKeys = new HashSet<Coordinate>();
 
         foreach (var bezierData in GetCubicBezierSegment(coordinates.ToList()))
         {
@@ -106,13 +122,13 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
             DrawnFillGeometry(chart, end, seriesVisual);
 
-            _ = currentVisuals.Add(seriesVisual);
+            currentUsedKeys.Add(bezierData.Start);
         }
 
         #region Old Remove
-        var visualsToRemove = _caches.Values.Except(currentVisuals).ToList();
-        foreach (var seriesVisual in visualsToRemove)
+        foreach (var key in _caches.Keys.Except(currentUsedKeys).ToList())
         {
+            var seriesVisual = _caches[key];
             var end = ToPixel(seriesVisual.End, primaryScaler, secondaryScaler);
             var control1 = ToPixel(seriesVisual.Control1, primaryScaler, secondaryScaler);
             var control2 = ToPixel(seriesVisual.Control2, primaryScaler, secondaryScaler);
@@ -134,6 +150,106 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
         #endregion
     }
+
+    #region Draw
+    private void DrawnFillGeometry(CoreChart chart, Point end, SeriesVisual seriesVisual)
+    {
+        if (FillGeometryPaint is null) return;
+
+        seriesVisual.FillVisual ??= chart.CanvasContext.RequestGeometry<TVisual>(FillGeometryPaint);
+
+        UpdateVisual(end, seriesVisual.FillVisual, VisualState.Display);
+
+        FillGeometryPaint.Style = PaintStyle.Fill;
+        FillGeometryPaint.ZIndex = 999;
+    }
+
+    private void DrawnStrokeGeometry(CoreChart chart, Point end, SeriesVisual seriesVisual)
+    {
+        if (StrokeGeometryPaint is null) return;
+
+        seriesVisual.StrokeVisual ??= chart.CanvasContext.RequestGeometry<TVisual>(StrokeGeometryPaint);
+
+        UpdateVisual(end, seriesVisual.StrokeVisual, VisualState.Display);
+
+        StrokeGeometryPaint.Style = PaintStyle.Stroke;
+        StrokeGeometryPaint.ZIndex = 1000;
+    }
+
+    #endregion
+
+    #region Update Visual
+    private void UpdateVisual(
+        Point end,
+        BaseRectangleGeometry geometry,
+        VisualState visualState)
+    {
+        geometry.X = end.X;
+        geometry.Y = end.Y;
+        geometry.Width = VisualGeometrySize / 2f;
+        geometry.Height = VisualGeometrySize / 2f;
+
+        geometry.ChangeVisualState(visualState);
+    }
+
+    private void UpdateSegment(
+        Point end,
+        Point c1,
+        Point c2,
+        CubicBezierSegment segment)
+    {
+        segment.End = end;
+        segment.Control1 = c1;
+        segment.Control2 = c2;
+    }
+
+    #endregion
+
+    public override IEnumerable<Coordinate> Fetch()
+    {
+        var parser = ChartConfig.Instance.GetParser<TValueType>();
+        double index = 0;
+        if (values is null) yield break;
+
+        foreach (var value in values.Cast<TValueType>())
+        {
+            yield return parser(index * SampleInterval, value!);
+            index++;
+        }
+    }
+
+    private IEnumerable<BezierData> GetCubicBezierSegment(List<Coordinate> coordinates)
+    {
+        if (coordinates == null || coordinates.Count < 2)
+            yield break;
+
+        for (int i = 0; i < coordinates.Count - 1; i++)
+        {
+            var p0 = i == 0 ? coordinates[i] : coordinates[i - 1];
+            var p1 = coordinates[i];
+            var p2 = coordinates[i + 1];
+            var p3 = i + 2 < coordinates.Count ? coordinates[i + 2] : p2;
+
+            // 计算p1-p2，需要用到p0-p3这4个点来
+            // Catmull-Rom to Bezier conversion
+            var cp1 = new Coordinate(
+                p1.X + (p2.X - p0.X) / 6.0 * LineSmoothness,
+                p1.Y + (p2.Y - p0.Y) / 6.0 * LineSmoothness);
+
+            var cp2 = new Coordinate(
+                p2.X - (p3.X - p1.X) / 6.0 * LineSmoothness,
+                p2.Y - (p3.Y - p1.Y) / 6.0 * LineSmoothness);
+
+            yield return new BezierData(i == 0)
+            {
+                Start = p1,
+                Control1 = cp1,
+                Control2 = cp2,
+                End = p2
+            };
+        }
+    }
+
 
     private Point ToPixel(Coordinate coordinate, Scaler primaryScaler, Scaler secondaryScaler)
     {
@@ -203,146 +319,5 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
         }
     }
 
-    private void DrawnFillGeometry(CoreChart chart, Point end, SeriesVisual seriesVisual)
-    {
-        if (FillGeometryPaint is null) return;
-
-        if (seriesVisual.FillVisual is null)
-        {
-            chart.CanvasContext.AddDrawnTask(FillGeometryPaint, out TVisual geometry);
-            seriesVisual.FillVisual = geometry;
-        }
-
-        UpdateVisual(end, seriesVisual.FillVisual, VisualState.Display);
-
-        FillGeometryPaint.Style = PaintStyle.Fill;
-        FillGeometryPaint.ZIndex = 999;
-    }
-
-    private void DrawnStrokeGeometry(CoreChart chart, Point end, SeriesVisual seriesVisual)
-    {
-        if (StrokeGeometryPaint is null) return;
-
-        if (seriesVisual.StrokeVisual is null)
-        {
-            chart.CanvasContext.AddDrawnTask(StrokeGeometryPaint, out TVisual geometry);
-            seriesVisual.StrokeVisual = geometry;
-        }
-
-        UpdateVisual(end, seriesVisual.StrokeVisual, VisualState.Display);
-
-        StrokeGeometryPaint.Style = PaintStyle.Stroke;
-        StrokeGeometryPaint.ZIndex = 1000;
-    }
-
-    private void UpdateVisual(
-        Point end,
-        BaseRectangleGeometry geometry,
-        VisualState visualState)
-    {
-        geometry.X = end.X;
-        geometry.Y = end.Y;
-        geometry.Width = VisualGeometrySize / 2f;
-        geometry.Height = VisualGeometrySize / 2f;
-
-        ChangeVisualState(geometry, visualState);
-    }
-
-    private void UpdateSegment(
-        Point end,
-        Point c1,
-        Point c2,
-        CubicBezierSegment segment)
-    {
-        segment.End = end;
-        segment.Control1 = c1;
-        segment.Control2 = c2;
-    }
-
-    private IEnumerable<BezierData> GetCubicBezierSegment(List<Coordinate> coordinates)
-    {
-        if (coordinates == null || coordinates.Count < 2)
-            yield break;
-
-        for (int i = 0; i < coordinates.Count - 1; i++)
-        {
-            var p0 = i == 0 ? coordinates[i] : coordinates[i - 1];
-            var p1 = coordinates[i];
-            var p2 = coordinates[i + 1];
-            var p3 = i + 2 < coordinates.Count ? coordinates[i + 2] : p2;
-
-            // 计算p1-p2，需要用到p0-p3这4个点来
-            // Catmull-Rom to Bezier conversion
-            var cp1 = new Coordinate(
-                p1.X + (p2.X - p0.X) / 6.0 * LineSmoothness,
-                p1.Y + (p2.Y - p0.Y) / 6.0 * LineSmoothness);
-
-            var cp2 = new Coordinate(
-                p2.X - (p3.X - p1.X) / 6.0 * LineSmoothness,
-                p2.Y - (p3.Y - p1.Y) / 6.0 * LineSmoothness);
-
-            yield return new BezierData(i == 0)
-            {
-                Start = p1,
-                Control1 = cp1,
-                Control2 = cp2,
-                End = p2
-            };
-        }
-    }
-
-
-    public override IEnumerable<Coordinate> Fetch()
-    {
-        var parser = ChartConfig.Instance.GetParser<TValueType>();
-        double index = 0;
-        if (values is null) yield break;
-
-        foreach (var value in values.Cast<TValueType>())
-        {
-            yield return parser(index * SampleInterval, value!);
-            index++;
-        }
-    }
-
-    private void ChangeVisualState(DrawnGeometry geometry, VisualState visualState)
-    {
-        switch (visualState)
-        {
-            case VisualState.Display:
-                geometry.Opacity = 1f;
-                break;
-            case VisualState.Remove:
-                geometry.Opacity = 0f;
-                geometry.Remove = true;
-                break;
-        }
-    }
-
-    private class BezierData(bool head)
-    {
-        public Coordinate Start { get; set; }
-        public Coordinate Control1 { get; set; }
-        public Coordinate Control2 { get; set; }
-        public Coordinate End { get; set; }
-        public bool Head { get; set; } = head;
-    }
-
-    private class SeriesVisual
-    {
-        public Coordinate Start { get; set; }
-        public Coordinate Control1 { get; set; }
-        public Coordinate Control2 { get; set; }
-        public Coordinate End { get; set; }
-
-        public TVisual? StrokeVisual { get; set; }
-        public TVisual? FillVisual { get; set; }
-    }
-
-    private enum VisualState
-    {
-        Display, // 1
-        Remove // 0
-    }
 }
 
