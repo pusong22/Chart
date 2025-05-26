@@ -3,6 +3,7 @@ using Core.Kernel.Axis;
 using Core.Kernel.Chart;
 using Core.Kernel.Series;
 using Core.Kernel.View;
+using Core.Kernel.Visual;
 using SkiaSharpBackend;
 
 namespace WinForm;
@@ -28,6 +29,8 @@ public abstract partial class ChartControl : UserControl, IChartView
     public Core.Primitive.Size ControlSize => new(_canvasControl.ClientSize.Width, _canvasControl.ClientSize.Height);
 
     public CanvasContext CanvasContext => _canvasControl.CanvasContext;
+
+    public VisualElement? Title { get; set; }
 
     public IEnumerable<CoreAxis>? XAxes
     {

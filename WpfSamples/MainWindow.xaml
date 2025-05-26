@@ -11,6 +11,7 @@
         <chart:CartesianChartControl 
             XAxes="{Binding XAxes}"
             YAxes="{Binding YAxes}"
-            Series="{Binding Series}"/>
+            Series="{Binding Series}"
+            Title="{Binding Title}"/>
     </Grid>
 </Window>

@@ -2,6 +2,7 @@ using Core.Helper;
 using Core.Kernel.Axis;
 using Core.Kernel.Painting;
 using Core.Kernel.Series;
+using Core.Kernel.Visual;
 using SkiaSharpBackend;
 using SkiaSharpBackend.Drawing;
 
@@ -12,6 +13,12 @@ public class ChartViewModel
     {
         ChartConfig.DisabledAnimation = true;
     }
+
+    public VisualElement Title { get; set; } = new LabelVisual()
+    {
+        Text = "Wpf Chart Sample",
+        TextPaint = new Brush(),
+    };
 
     public CoreAxis[] XAxes { get; set; } = [
         new Axis() {

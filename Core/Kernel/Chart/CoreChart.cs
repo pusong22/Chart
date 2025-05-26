@@ -1,3 +1,4 @@
+using Core.Helper;
 using Core.Kernel.View;
 using Core.Primitive;
 
@@ -9,6 +10,8 @@ public abstract class CoreChart(IChartView view)
     public Size DrawnSize { get; protected internal set; }
     public bool IsLoad { get; private set; }
     public Size ControlSize { get; private set; } = view.ControlSize;
+
+    protected abstract void Initialize();
 
     protected abstract void Measure();
 
@@ -29,11 +32,19 @@ public abstract class CoreChart(IChartView view)
     {
         if (!IsLoad) return;
 
+#if DEBUG
+        if (ChartConfig.EnableLog)
+        {
+
+        }
+#endif
+
         view.InvokeUIThread(() =>
         {
             CanvasContext = view.CanvasContext;
             ControlSize = view.ControlSize;
 
+            Initialize();
             Measure();
             Invalidate();
 
