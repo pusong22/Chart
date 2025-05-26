@@ -3,6 +3,7 @@ using Core.Kernel.Axis;
 using Core.Kernel.Layout;
 using Core.Kernel.Series;
 using Core.Kernel.View;
+using Core.Kernel.Visual;
 using Core.Primitive;
 
 namespace Core.Kernel.Chart;
@@ -10,20 +11,16 @@ namespace Core.Kernel.Chart;
 public class CartesianChart(ICartesianChartView view) : CoreChart(view)
 {
     public CoreDrawnRect? CoreDrawnDataArea { get; private set; }
+    public BaseLabelVisual? Title { get; private set; }
 
     public CoreCartesianAxis[]? XAxes { get; private set; }
     public CoreCartesianAxis[]? YAxes { get; private set; }
     public CoreCartesianSeries[]? Series { get; private set; }
 
-    protected override void Measure()
+    protected override void Initialize()
     {
-#if DEBUG
-        if (ChartConfig.EnableLog)
-        {
-
-        }
-#endif
         CoreDrawnDataArea = view.CoreDrawnDataArea;
+        Title = view.Title as BaseLabelVisual;
 
         var x = view.XAxes;
         var y = view.YAxes;
@@ -77,6 +74,25 @@ public class CartesianChart(ICartesianChartView view) : CoreChart(view)
         {
             axis.Reset(AxisOrientation.Y);
         }
+    }
+
+    protected override void Measure()
+    {
+        var margin = new Margin(0f);
+
+        if (Title is not null)
+        {
+            var titleSize = Title.Measure();
+            float xo = ControlSize.Width * .5f - titleSize.Width * .5f;
+            float yo = 0f;
+
+            Title.TextDesiredRect = new Rect(
+                new Point(xo, yo),
+                titleSize);
+
+            margin.Top = titleSize.Height;
+        }
+
 
         BaseLayoutStrategy layoutStrategy = view.LayoutKind switch
         {
@@ -84,12 +100,13 @@ public class CartesianChart(ICartesianChartView view) : CoreChart(view)
             _ => throw new NotImplementedException(),
         };
 
-        layoutStrategy.CalculateLayout();
+        layoutStrategy.CalculateLayout(margin);
     }
-
+    
     protected override void Invalidate()
     {
         CoreDrawnDataArea?.Invalidate(this);
+        Title?.Invalidate(this);
 
         var axes = XAxes.Concat(YAxes);
         foreach (var axis in axes)

@@ -3,6 +3,7 @@ using Core.Kernel.Axis;
 using Core.Kernel.Chart;
 using Core.Kernel.Series;
 using Core.Kernel.View;
+using Core.Kernel.Visual;
 using SkiaSharpBackend;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,6 +23,11 @@ public abstract class ChartControl : UserControl, IChartView
     }
 
     #region DP
+    public VisualElement Title
+    {
+        get { return (VisualElement)GetValue(TitleProperty); }
+        set { SetValue(TitleProperty, value); }
+    }
 
     public IEnumerable<CoreSeries> Series
     {
@@ -40,6 +46,13 @@ public abstract class ChartControl : UserControl, IChartView
         get { return (IEnumerable<CoreAxis>)GetValue(YAxesProperty); }
         set { SetValue(YAxesProperty, value); }
     }
+
+    public static readonly DependencyProperty TitleProperty =
+        DependencyProperty.Register(
+            "Title",
+            typeof(VisualElement),
+            typeof(ChartControl),
+            new PropertyMetadata(null));
 
     public static readonly DependencyProperty SeriesProperty =
         DependencyProperty.Register(
@@ -72,6 +85,7 @@ public abstract class ChartControl : UserControl, IChartView
     public Core.Primitive.Size ControlSize => new((float)CanvasControl.ActualWidth, (float)CanvasControl.ActualHeight);
 
     public CanvasContext CanvasContext => CanvasControl.CanvasContext;
+    
 
     public void InvokeUIThread(Action action)
     {

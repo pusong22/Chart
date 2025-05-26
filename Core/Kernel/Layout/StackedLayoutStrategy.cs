@@ -5,12 +5,12 @@ namespace Core.Kernel.Layout
 {
     public class StackedLayoutStrategy(CartesianChart chart) : BaseLayoutStrategy
     {
-        public override void CalculateLayout()
+        public override void CalculateLayout(Margin margin)
         {
-            float l = 0f,
-                t = 0f,
-                r = 0f,
-                b = 0f;
+            float l = margin.Left,
+                t = margin.Top,
+                r = margin.Right,
+                b = margin.Bottom;
 
             int xaxisCount = chart.XAxes!.Length;
             int yaxisCount = chart.YAxes!.Length;
