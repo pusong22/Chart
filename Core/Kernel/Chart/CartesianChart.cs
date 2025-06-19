@@ -1,4 +1,3 @@
-using Core.Helper;
 using Core.Kernel.Axis;
 using Core.Kernel.Layout;
 using Core.Kernel.Series;
@@ -10,38 +9,27 @@ namespace Core.Kernel.Chart;
 
 public class CartesianChart(ICartesianChartView view) : CoreChart(view)
 {
-    public CoreDrawnRect? CoreDrawnDataArea { get; private set; }
     public BaseLabelVisual? Title { get; private set; }
 
     public CoreCartesianAxis[]? XAxes { get; private set; }
     public CoreCartesianAxis[]? YAxes { get; private set; }
     public CoreCartesianSeries[]? Series { get; private set; }
 
-    protected override void Initialize()
+    protected override bool Initialize()
     {
-        CoreDrawnDataArea = view.CoreDrawnDataArea;
         Title = view.Title as BaseLabelVisual;
 
         var x = view.XAxes;
         var y = view.YAxes;
 
-        var instance = ChartConfig.Instance;
-
-        if (x is null || x.Count() == 0 || y is null || y.Count() == 0)
+        if (x is null || x.Count() == 0
+            || y is null || y.Count() == 0)
         {
-            var provider = instance.GetProvider();
-            x = [provider.GetAxis()];
-            y = [provider.GetAxis()];
+            return false;
         }
 
-        XAxes = x.Cast<CoreCartesianAxis>().ToArray();
-        YAxes = y.Cast<CoreCartesianAxis>().ToArray();
-
-        if (XAxes.Length == 0 || YAxes.Length == 0)
-        {
-            throw new Exception($"{nameof(XAxes)} and {nameof(YAxes)} must contain at least one element.");
-        }
-
+        XAxes = [.. x.Cast<CoreCartesianAxis>()];
+        YAxes = [.. y.Cast<CoreCartesianAxis>()];
 
         var s = view.Series;
 
@@ -50,7 +38,7 @@ public class CartesianChart(ICartesianChartView view) : CoreChart(view)
             s = [];
         }
 
-        Series = s.Cast<CoreCartesianSeries>().ToArray();
+        Series = [.. s.Cast<CoreCartesianSeries>()];
 
         foreach (var series in Series)
         {
@@ -74,6 +62,8 @@ public class CartesianChart(ICartesianChartView view) : CoreChart(view)
         {
             axis.Reset(AxisOrientation.Y);
         }
+
+        return true;
     }
 
     protected override void Measure()
@@ -102,10 +92,9 @@ public class CartesianChart(ICartesianChartView view) : CoreChart(view)
 
         layoutStrategy.CalculateLayout(margin);
     }
-    
+
     protected override void Invalidate()
     {
-        CoreDrawnDataArea?.Invalidate(this);
         Title?.Invalidate(this);
 
         var axes = XAxes.Concat(YAxes);

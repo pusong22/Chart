@@ -2,7 +2,6 @@ using Core.Kernel.Chart;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Painting;
 using Core.Primitive;
-using System.Xml.Linq;
 
 namespace Core.Kernel.Visual;
 public abstract class BaseLabelVisual : VisualElement

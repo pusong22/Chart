@@ -3,7 +3,6 @@ using Core.Primitive;
 namespace Core.Helper;
 public class ChartConfig
 {
-    private Provider? _provider;
     private readonly Dictionary<Type, Delegate> _mappers = [];
 
     public static ChartConfig Instance { get; } = new();
@@ -23,16 +22,6 @@ public class ChartConfig
             throw new ArgumentNullException(nameof(defaultSetting));
 
         defaultSetting(Instance);
-    }
-
-    public void SetProvider(Provider provider)
-    {
-        _provider = provider;
-    }
-
-    public Provider GetProvider()
-    {
-        return _provider ?? throw new ArgumentNullException($"{nameof(_provider)}");
     }
 
     #region Coordinate Mapper

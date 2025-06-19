@@ -9,9 +9,9 @@ public abstract class CoreChart(IChartView view)
     public Point DrawnLocation { get; protected internal set; }
     public Size DrawnSize { get; protected internal set; }
     public bool IsLoad { get; private set; }
-    public Size ControlSize { get; private set; } = view.ControlSize;
+    public Size ControlSize { get; private set; }
 
-    protected abstract void Initialize();
+    protected abstract bool Initialize();
 
     protected abstract void Measure();
 
@@ -44,7 +44,7 @@ public abstract class CoreChart(IChartView view)
             CanvasContext = view.CanvasContext;
             ControlSize = view.ControlSize;
 
-            Initialize();
+            if (!Initialize()) return;
             Measure();
             Invalidate();
 
