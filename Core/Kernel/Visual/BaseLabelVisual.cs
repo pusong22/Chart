@@ -1,12 +1,14 @@
-using Core.Kernel.Chart;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Painting;
 using Core.Primitive;
 
 namespace Core.Kernel.Visual;
-public abstract class BaseLabelVisual : VisualElement
+
+public abstract class BaseLabelVisual<TLabel> : IBaseLabelVisual
+    where TLabel : BaseLabelGeometry, new()
 {
-    private Paint? _textPaint;
+    private TLabel? _labelGeometry;
+    private Paint? _textPaint = new Brush();
     public string? Text { get; set; }
 
     public float TextSize { get; set; } = 16f;
@@ -30,23 +32,17 @@ public abstract class BaseLabelVisual : VisualElement
 
     public Padding TextPadding { get; set; } = new Padding(5f);
 
-    public Rect TextDesiredRect { get; protected internal set; }
-}
+    public Rect TextDesiredRect { get; set; }
+    public object? Tag { get; set; }
 
-
-public abstract class BaseLabelVisual<TLabel> : BaseLabelVisual
-    where TLabel : BaseLabelGeometry, new()
-{
-    private TLabel? _labelGeometry;
-
-    public override void Invalidate(CoreChart chart)
+    public void Invalidate(CartesianChart chart)
     {
         if (TextPaint is null || Text is null) return;
 
-        _labelGeometry ??= chart.CanvasContext.RequestGeometry<TLabel>(TextPaint);
+        _labelGeometry = new TLabel();
+        chart.RequestGeometry(TextPaint, _labelGeometry);
 
         _labelGeometry.Text = Text;
-        _labelGeometry.TextSize = TextSize;
         _labelGeometry.Paint = TextPaint;
         _labelGeometry.RotateTransform = TextRotation;
         _labelGeometry.Padding = TextPadding;
@@ -54,7 +50,7 @@ public abstract class BaseLabelVisual<TLabel> : BaseLabelVisual
         _labelGeometry.Y = TextDesiredRect.Y + TextDesiredRect.Height * 0.5f;
     }
 
-    public override Size Measure()
+    public Size Measure()
     {
         if (TextPaint is null || string.IsNullOrWhiteSpace(Text))
             return new Size(0f, 0f);
@@ -62,7 +58,6 @@ public abstract class BaseLabelVisual<TLabel> : BaseLabelVisual
         var geometry = new TLabel
         {
             Text = Text,
-            TextSize = TextSize,
             Paint = TextPaint,
             RotateTransform = TextRotation,
             Padding = TextPadding

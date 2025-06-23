@@ -1,4 +1,3 @@
-using Core.Kernel.Series;
 using Core.Primitive;
 
 namespace Core.Kernel.Drawing.Geometry;
@@ -11,12 +10,5 @@ public abstract class BaseVectoryGeometry<TSegment> : DrawnGeometry
     public override Size Measure()
     {
         return new Size(0f, 0f);
-    }
-
-    public override bool TryReset()
-    {
-        Segments.Clear();
-
-        return base.TryReset();
     }
 }

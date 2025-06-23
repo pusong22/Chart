@@ -1,4 +1,3 @@
-using Core.Kernel.Chart;
 using Core.Primitive;
 
 namespace Core.Kernel.Layout

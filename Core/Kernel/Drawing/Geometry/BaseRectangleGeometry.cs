@@ -10,12 +10,4 @@ public abstract class BaseRectangleGeometry : DrawnGeometry
     {
         return new Size(Width, Height);
     }
-
-    public override bool TryReset()
-    {
-        Width = 0f;
-        Height = 0f;
-
-        return base.TryReset();
-    }
 }

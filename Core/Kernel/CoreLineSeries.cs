@@ -1,33 +1,13 @@
 using Core.Helper;
-using Core.Kernel.Axis;
-using Core.Kernel.Chart;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Measuring;
 using Core.Kernel.Painting;
 using Core.Primitive;
 
-namespace Core.Kernel.Series;
+namespace Core.Kernel;
 
-public abstract class CoreLineSeries : CoreCartesianSeries
-{
-    private float _lineSmoothness;
-
-    public float LineSmoothness
-    {
-        get => _lineSmoothness;
-        set
-        {
-            if (value < 0) value = 0;
-            if (value > 1) value = 1;
-            _lineSmoothness = value;
-        }
-    }
-
-    public float VisualGeometrySize { get; set; }
-    public double SampleInterval { get; set; } = 1d;
-}
-
-public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollection<TValueType>? values) : CoreLineSeries
+public abstract class CoreLineSeries<TValueType, TVisual, TPath>
+    (IReadOnlyCollection<TValueType>? values) : ILineSeries
     where TVisual : BaseRectangleGeometry, new()
     where TPath : BaseVectoryGeometry<CubicBezierSegment>, new()
 {
@@ -51,20 +31,83 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
         public TVisual? FillVisual { get; set; }
     }
 
-    private readonly Dictionary<Coordinate, SeriesVisual> _caches = [];
-
     private TPath? _vectorGeometry;
 
+    public object? Tag { get; }
     public Paint? StrokeGeometryPaint { get; set; }
     public Paint? FillGeometryPaint { get; set; }
 
-    public override void Invalidate(CoreChart chart)
+    private Paint? _seriesPaint = new Pen();
+    private float _lineSmoothness;
+    private int _xIndex;
+    private int _yIndex;
+
+    public float VisualGeometrySize { get; set; }
+    public double SampleInterval { get; set; } = 1d;
+
+
+    public Paint? SeriesPaint
+    {
+        get => _seriesPaint;
+        set
+        {
+            if (value != _seriesPaint)
+            {
+                _seriesPaint = value;
+            }
+        }
+    }
+
+    public float LineSmoothness
+    {
+        get => _lineSmoothness;
+        set
+        {
+            if (value < 0) value = 0;
+            if (value > 1) value = 1;
+            _lineSmoothness = value;
+        }
+    }
+
+
+    public int XIndex
+    {
+        get => _xIndex;
+        set => _xIndex = value;
+    }
+
+    public int YIndex
+    {
+        get => _yIndex;
+        set => _yIndex = value;
+    }
+
+    public virtual SeriesBound GetBound()
+    {
+        var primaryBound = new Bound(0d, 0d);
+        var secondaryBound = new Bound(0d, 0d);
+        foreach (var item in Fetch())
+        {
+            primaryBound.AppendValue(item.X);
+            secondaryBound.AppendValue(item.Y);
+        }
+
+        primaryBound.Expand(0.15d);
+        secondaryBound.Expand(0.15d);
+
+        return new SeriesBound()
+        {
+            PrimaryBound = primaryBound,
+            SecondaryBound = secondaryBound
+        };
+    }
+
+    public void Invalidate(CartesianChart chart)
     {
         if (SeriesPaint is null) return;
 
-        var cartesianChart = (CartesianChart)chart;
-        var primaryAxis = cartesianChart.XAxes![XIndex];
-        var secondaryAxis = cartesianChart.YAxes![YIndex];
+        var primaryAxis = chart.XAxes![XIndex];
+        var secondaryAxis = chart.YAxes![YIndex];
 
         var primaryScaler = new Scaler(false,
             primaryAxis.LabelDesiredRect.X,
@@ -80,13 +123,12 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
         var coordinates = ReduceDensity(primaryAxis, primaryScaler);
 
-        _vectorGeometry ??= chart.CanvasContext.RequestGeometry<TPath>(SeriesPaint);
+        _vectorGeometry = new TPath();
+        chart.RequestGeometry(SeriesPaint, _vectorGeometry);
 
         _vectorGeometry.Segments.Clear();
 
-        var currentUsedKeys = new HashSet<Coordinate>();
-
-        foreach (var bezierData in GetCubicBezierSegment(coordinates.ToList()))
+        foreach (var bezierData in GetCubicBezierSegment([.. coordinates]))
         {
             var start = ToPixel(bezierData.Start, primaryScaler, secondaryScaler);
 
@@ -100,17 +142,12 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
             var control1 = ToPixel(bezierData.Control1, primaryScaler, secondaryScaler);
             var control2 = ToPixel(bezierData.Control2, primaryScaler, secondaryScaler);
 
-            if (!_caches.TryGetValue(bezierData.Start, out var seriesVisual))
+            var seriesVisual = new SeriesVisual()
             {
-                seriesVisual = new SeriesVisual()
-                {
-                    End = bezierData.End,
-                    Control1 = bezierData.Control1,
-                    Control2 = bezierData.Control2,
-                };
-
-                _caches[bezierData.Start] = seriesVisual;
-            }
+                End = bezierData.End,
+                Control1 = bezierData.Control1,
+                Control2 = bezierData.Control2,
+            };
 
             var segment = new CubicBezierSegment();
 
@@ -121,56 +158,31 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
             DrawnStrokeGeometry(chart, end, seriesVisual);
 
             DrawnFillGeometry(chart, end, seriesVisual);
-
-            currentUsedKeys.Add(bezierData.Start);
         }
-
-        #region Old Remove
-        foreach (var key in _caches.Keys.Except(currentUsedKeys).ToList())
-        {
-            var seriesVisual = _caches[key];
-            var end = ToPixel(seriesVisual.End, primaryScaler, secondaryScaler);
-            var control1 = ToPixel(seriesVisual.Control1, primaryScaler, secondaryScaler);
-            var control2 = ToPixel(seriesVisual.Control2, primaryScaler, secondaryScaler);
-
-
-            if (seriesVisual.FillVisual is not null)
-            {
-                UpdateVisual(end, seriesVisual.FillVisual, VisualState.Remove);
-            }
-
-            if (seriesVisual.StrokeVisual is not null)
-            {
-                UpdateVisual(end, seriesVisual.StrokeVisual, VisualState.Remove);
-            }
-
-            var keyToRemove = _caches.FirstOrDefault(x => x.Value == seriesVisual).Key;
-            _caches.Remove(keyToRemove);
-        }
-
-        #endregion
     }
 
     #region Draw
-    private void DrawnFillGeometry(CoreChart chart, Point end, SeriesVisual seriesVisual)
+    private void DrawnFillGeometry(CartesianChart chart, Point end, SeriesVisual seriesVisual)
     {
         if (FillGeometryPaint is null) return;
 
-        seriesVisual.FillVisual ??= chart.CanvasContext.RequestGeometry<TVisual>(FillGeometryPaint);
+        seriesVisual.FillVisual = new TVisual();
+        chart.RequestGeometry(FillGeometryPaint, seriesVisual.FillVisual);
 
-        UpdateVisual(end, seriesVisual.FillVisual, VisualState.Display);
+        UpdateVisual(end, seriesVisual.FillVisual);
 
         FillGeometryPaint.Style = PaintStyle.Fill;
         FillGeometryPaint.ZIndex = 999;
     }
 
-    private void DrawnStrokeGeometry(CoreChart chart, Point end, SeriesVisual seriesVisual)
+    private void DrawnStrokeGeometry(CartesianChart chart, Point end, SeriesVisual seriesVisual)
     {
         if (StrokeGeometryPaint is null) return;
 
-        seriesVisual.StrokeVisual ??= chart.CanvasContext.RequestGeometry<TVisual>(StrokeGeometryPaint);
+        seriesVisual.StrokeVisual = new TVisual();
+        chart.RequestGeometry(StrokeGeometryPaint, seriesVisual.StrokeVisual);
 
-        UpdateVisual(end, seriesVisual.StrokeVisual, VisualState.Display);
+        UpdateVisual(end, seriesVisual.StrokeVisual);
 
         StrokeGeometryPaint.Style = PaintStyle.Stroke;
         StrokeGeometryPaint.ZIndex = 1000;
@@ -181,15 +193,12 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
     #region Update Visual
     private void UpdateVisual(
         Point end,
-        BaseRectangleGeometry geometry,
-        VisualState visualState)
+        BaseRectangleGeometry geometry)
     {
         geometry.X = end.X;
         geometry.Y = end.Y;
         geometry.Width = VisualGeometrySize / 2f;
         geometry.Height = VisualGeometrySize / 2f;
-
-        geometry.ChangeVisualState(visualState);
     }
 
     private void UpdateSegment(
@@ -205,7 +214,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
     #endregion
 
-    public override IEnumerable<Coordinate> Fetch()
+    public IEnumerable<Coordinate> Fetch()
     {
         var parser = ChartConfig.Instance.GetParser<TValueType>();
         double index = 0;
@@ -256,7 +265,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
         return new Point(primaryScaler.ToPixel(coordinate.X), secondaryScaler.ToPixel(coordinate.Y));
     }
 
-    private IEnumerable<Coordinate> ReduceDensity(CoreCartesianAxis primaryAxis, Scaler primaryScaler)
+    private IEnumerable<Coordinate> ReduceDensity(ICartesianAxis primaryAxis, Scaler primaryScaler)
     {
         var coors = Fetch().ToList();
 
@@ -281,7 +290,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
         var width = primaryAxis.Max - primaryAxis.Min;
         var countPerPx =
-            (width / SampleInterval) // 需要多少像素
+            width / SampleInterval // 需要多少像素
             / primaryAxis.NameDesiredRect.Width; // 当前像素是否大于总像素
 
 
@@ -298,7 +307,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
                 int i1 = GetIndex(min);
                 int i2 = GetIndex(max);
 
-                if (i1 < 0 || i2 > (coors.Count - 1)) continue;
+                if (i1 < 0 || i2 > coors.Count - 1) continue;
 
                 var bound = GetBound(i1, i2);
 
@@ -312,7 +321,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>(IReadOnlyCollec
 
             for (int i = i1; i <= i2; i++)
             {
-                if (i < 0 || i > (coors.Count - 1)) continue;
+                if (i < 0 || i > coors.Count - 1) continue;
 
                 yield return coors[i];
             }

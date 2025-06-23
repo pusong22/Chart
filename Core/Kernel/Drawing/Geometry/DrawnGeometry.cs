@@ -1,54 +1,17 @@
-using Core.Kernel.Motion;
 using Core.Kernel.Painting;
 using Core.Primitive;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Core.Kernel.Drawing.Geometry;
-public abstract class DrawnGeometry : Animatable, IResettable
+public abstract class DrawnGeometry
 {
-    private readonly FloatMotionProperty _opacityProperty;
-    private readonly FloatMotionProperty _xProperty;
-    private readonly FloatMotionProperty _yProperty;
-
-    private float _rotateTransform;
-
-    protected DrawnGeometry()
-    {
-        _opacityProperty = RegisterMotionProperty(new FloatMotionProperty(nameof(Opacity), 1f));
-        _xProperty = RegisterMotionProperty(new FloatMotionProperty(nameof(X), 0f));
-        _yProperty = RegisterMotionProperty(new FloatMotionProperty(nameof(Y), 0f));
-    }
+    public float Opacity { get; protected internal set; } = 1f;
 
 
-    public float Opacity
-    {
-        get => _opacityProperty.Get(this);
-        protected internal set
-        {
-            if (value < 0f) value = 0f;
-            if (value > 1f) value = 1f;
+    public float X { get; protected internal set; }
 
-            _opacityProperty.Set(value, this);
-        }
-    }
+    public float Y { get; protected internal set; }
 
-    public float X
-    {
-        get => _xProperty.Get(this);
-        protected internal set => _xProperty.Set(value, this);
-    }
-
-    public float Y
-    {
-        get => _yProperty.Get(this);
-        protected internal set => _yProperty.Set(value, this);
-    }
-
-    public float RotateTransform
-    {
-        get => _rotateTransform;
-        protected internal set => _rotateTransform = value;
-    }
+    public float RotateTransform { get; protected internal set; }
 
     public bool HasRotation => RotateTransform != 0;
 
@@ -57,19 +20,4 @@ public abstract class DrawnGeometry : Animatable, IResettable
     public abstract void Draw<TDrawnContext>(TDrawnContext context)
         where TDrawnContext : DrawnContext;
     public abstract Size Measure();
-
-    public virtual bool TryReset()
-    {
-        Remove = false;
-        CurrentTime = long.MaxValue;
-        Motions.Clear();
-
-        Opacity = 1f;
-        X = 0f;
-        Y = 0f;
-        RotateTransform = 0f;
-        Paint = null;
-
-        return true;
-    }
 }

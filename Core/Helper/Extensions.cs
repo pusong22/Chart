@@ -1,33 +1,9 @@
-using Core.Kernel.Axis;
-using Core.Kernel.Drawing.Geometry;
-using Core.Kernel.Motion;
+using Core.Kernel;
 using Core.Primitive;
 
 namespace Core.Helper;
 public static class Extensions
 {
-    public static void Animate(this Animatable animatable, Func<float, float>? easingFunction, TimeSpan speed, params string[]? properties) =>
-        animatable.Animate(new Animation(easingFunction, speed), properties);
-
-    public static void Animate(this Animatable animatable, Animation animation, params string[]? properties)
-    {
-        animatable.SetMotion(animation, properties);
-    }
-
-    public static void ChangeVisualState(this DrawnGeometry geometry, VisualState visualState)
-    {
-        switch (visualState)
-        {
-            case VisualState.Display:
-                geometry.Opacity = 1f;
-                break;
-            case VisualState.Remove:
-                geometry.Opacity = 0f;
-                geometry.Remove = true;
-                break;
-        }
-    }
-
     public static bool Validate(double val)
     {
         return !double.IsNaN(val) && !double.IsInfinity(val);
@@ -47,7 +23,7 @@ public static class Extensions
             yield return i;
     }
 
-    public static double GetIdealStep(this CoreCartesianAxis axis, Size controlSize)
+    public static double GetIdealStep(this ICartesianAxis axis, Size controlSize)
     {
         var maxLabelSize = axis.MeasureMaxLabelSize();
 

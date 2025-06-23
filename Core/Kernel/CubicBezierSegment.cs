@@ -1,6 +1,6 @@
 using Core.Primitive;
 
-namespace Core.Kernel.Series;
+namespace Core.Kernel;
 public class CubicBezierSegment
 {
     public Point End { get; set; }
