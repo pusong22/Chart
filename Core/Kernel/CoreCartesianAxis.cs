@@ -144,8 +144,8 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
 
     public void SetBound(double min, double max)
     {
-        if (Min > min) Min = min;
-        if (Max < max) Max = max;
+        Min = min;
+        Max = max;
     }
 
 
@@ -214,7 +214,7 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
             DrawAxisSubTick(chart, step, scaler, lxi, lxj, lyi, lyj, x, y);
 
             DrawAxisLabel(chart, label, x, y);
-
+            
             DrawAxisSeparator(chart, lxi, lxj, lyi, lyj, x, y);
             DrawAxisSubSeparator(chart, step, scaler, lxi, lxj, lyi, lyj, x, y);
         }

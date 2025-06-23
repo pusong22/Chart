@@ -7,7 +7,6 @@ public class ChartConfig
 
     public static ChartConfig Instance { get; } = new();
 
-    public static bool EnableLog { get; set; } = false;
     public static bool ShowFPS { get; set; } = false;
     public static bool USE_GPU { get; set; } = false;
 

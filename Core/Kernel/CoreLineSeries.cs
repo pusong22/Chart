@@ -6,11 +6,12 @@ using Core.Primitive;
 
 namespace Core.Kernel;
 
-public abstract class CoreLineSeries<TValueType, TVisual, TPath>
-    (IReadOnlyCollection<TValueType>? values) : ILineSeries
+public abstract class CoreLineSeries<TValueType, TVisual, TPath> : ILineSeries
     where TVisual : BaseRectangleGeometry, new()
     where TPath : BaseVectoryGeometry<CubicBezierSegment>, new()
 {
+    public IReadOnlyCollection<TValueType>? Values { get; set; }
+
     private class BezierData(bool head)
     {
         public Coordinate Start { get; set; }
@@ -82,10 +83,12 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>
         set => _yIndex = value;
     }
 
+    public double XOffset { get; set; } = 0d;
+
     public virtual SeriesBound GetBound()
     {
-        var primaryBound = new Bound(0d, 0d);
-        var secondaryBound = new Bound(0d, 0d);
+        var primaryBound = new Bound(double.PositiveInfinity, double.NegativeInfinity);
+        var secondaryBound = new Bound(double.PositiveInfinity, double.NegativeInfinity);
         foreach (var item in Fetch())
         {
             primaryBound.AppendValue(item.X);
@@ -218,11 +221,11 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>
     {
         var parser = ChartConfig.Instance.GetParser<TValueType>();
         double index = 0;
-        if (values is null) yield break;
+        if (Values is null) yield break;
 
-        foreach (var value in values.Cast<TValueType>())
+        foreach (var value in Values.Cast<TValueType>())
         {
-            yield return parser(index * SampleInterval, value!);
+            yield return parser(XOffset + index * SampleInterval, value!);
             index++;
         }
     }
@@ -271,7 +274,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath>
 
         int GetIndex(double val)
         {
-            int index = (int)Math.Floor(val / SampleInterval);
+            int index = (int)Math.Floor((val - XOffset) / SampleInterval);
             return index;
         }
 

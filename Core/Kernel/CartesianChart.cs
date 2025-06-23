@@ -40,25 +40,18 @@ public class CartesianChart(ICartesianChartView view)
     {
         if (!IsLoad) return;
 
-#if DEBUG
-        if (ChartConfig.EnableLog)
-        {
-
-        }
-#endif
-
         view.InvokeUIThread(() =>
         {
             ControlSize = view.ControlSize;
             Return();
-            if (!Initialize()) return;
+            Initialize();
             Measure();
             Invalidate();
             RedrawHandler?.Invoke(this, EventArgs.Empty);
         });
     }
 
-    protected bool Initialize()
+    protected void Initialize()
     {
         Title = view.Title;
 
@@ -79,7 +72,9 @@ public class CartesianChart(ICartesianChartView view)
             s = [];
 
         Series = [.. s.Cast<ILineSeries>()];
-
+       
+        // Known Issue: When multiple series share a common X-axis but have different sampling rates or time spans,
+        // the axis bounds may be dominated by the smaller-range series, leading to incomplete rendering of others.
         foreach (var series in Series)
         {
             var xAxis = XAxes[series.XIndex];
@@ -102,8 +97,6 @@ public class CartesianChart(ICartesianChartView view)
         {
             axis.Reset(AxisOrientation.Y);
         }
-
-        return true;
     }
 
     protected void Measure()
