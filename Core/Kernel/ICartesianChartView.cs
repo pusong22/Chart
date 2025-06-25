@@ -8,7 +8,7 @@ public interface ICartesianChartView
 
     IEnumerable<ICartesianAxis>? XAxes { get; }
     IEnumerable<ICartesianAxis>? YAxes { get; }
-    IEnumerable<ILineSeries>? Series { get; }
+    IEnumerable<ICartesianSeries>? Series { get; }
 
     void InvokeUIThread(Action action);
 

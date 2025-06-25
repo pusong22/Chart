@@ -13,8 +13,8 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
     private TLabel? _nameGeometry;
     private TLine? _tickPath;
 
-    private Paint? _namePaint = new Brush();
-    private Paint? _labelPaint = new Brush();
+    private Paint? _namePaint;
+    private Paint? _labelPaint;
 
     private Paint? _tickPaint;
     private Paint? _subTickPaint;
@@ -214,7 +214,7 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
             DrawAxisSubTick(chart, step, scaler, lxi, lxj, lyi, lyj, x, y);
 
             DrawAxisLabel(chart, label, x, y);
-            
+
             DrawAxisSeparator(chart, lxi, lxj, lyi, lyj, x, y);
             DrawAxisSubSeparator(chart, step, scaler, lxi, lxj, lyi, lyj, x, y);
         }

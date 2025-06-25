@@ -223,7 +223,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath> : ILineSeries
         double index = 0;
         if (Values is null) yield break;
 
-        foreach (var value in Values.Cast<TValueType>())
+        foreach (var value in Values)
         {
             yield return parser(XOffset + index * SampleInterval, value!);
             index++;

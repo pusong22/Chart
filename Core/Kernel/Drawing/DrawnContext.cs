@@ -17,6 +17,7 @@ public abstract class DrawnContext
 
     public abstract TRect MeasureText<TRect>(string text);
     public abstract void DrawRect<TRect>(TRect rect);
+    public abstract void DrawBitmap<TBitmap, TRect>(TBitmap bmp, TRect rect);
     public abstract void DrawText<TPoint>(string text, TPoint p);
     public abstract void DrawLine<TPoint>(TPoint p1, TPoint p2);
     public abstract void DrawCircle<TPoint>(TPoint p, float rd);

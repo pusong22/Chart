@@ -1,4 +1,3 @@
-using Core.Helper;
 using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Layout;
@@ -21,7 +20,7 @@ public class CartesianChart(ICartesianChartView view)
 
     public ICartesianAxis[]? XAxes { get; private set; }
     public ICartesianAxis[]? YAxes { get; private set; }
-    public ILineSeries[]? Series { get; private set; }
+    public ICartesianSeries[]? Series { get; private set; }
 
     public event EventHandler? RedrawHandler;
 
@@ -71,8 +70,8 @@ public class CartesianChart(ICartesianChartView view)
         if (s == null || s.Count() == 0)
             s = [];
 
-        Series = [.. s.Cast<ILineSeries>()];
-       
+        Series = [.. s.Cast<ICartesianSeries>()];
+
         // Known Issue: When multiple series share a common X-axis but have different sampling rates or time spans,
         // the axis bounds may be dominated by the smaller-range series, leading to incomplete rendering of others.
         foreach (var series in Series)
