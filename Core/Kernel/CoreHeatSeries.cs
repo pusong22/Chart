@@ -150,8 +150,8 @@ public abstract class CoreHeatSeries<TValueType, TVisual>()
             _weightBound.AppendValue(item.Z);
         }
 
-        primaryBound.Expand(0.5d);
-        secondaryBound.Expand(0.5d);
+        //primaryBound.Expand(0.5d);
+        //secondaryBound.Expand(0.5d);
 
         return new SeriesBound()
         {
