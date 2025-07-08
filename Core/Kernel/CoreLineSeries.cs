@@ -105,7 +105,7 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath> : ILineSeries
         };
     }
 
-    public void Invalidate(CartesianChart chart)
+    public void CalculateGeometries(CartesianChart chart)
     {
         if (SeriesPaint is null) return;
 

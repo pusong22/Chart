@@ -63,7 +63,7 @@ public abstract class CoreHeatSeries<TValueType, TVisual>()
         return pixels;
     }
 
-    public void Invalidate(CartesianChart chart)
+    public void CalculateGeometries(CartesianChart chart)
     {
         if (HeatPaint is null) return;
 

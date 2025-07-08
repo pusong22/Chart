@@ -35,7 +35,7 @@ public abstract class BaseLabelVisual<TLabel> : IBaseLabelVisual
     public Rect TextDesiredRect { get; set; }
     public object? Tag { get; set; }
 
-    public void Invalidate(CartesianChart chart)
+    public void CalculateGeometries(CartesianChart chart)
     {
         if (TextPaint is null || Text is null) return;
 

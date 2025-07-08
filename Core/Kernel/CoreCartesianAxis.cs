@@ -149,7 +149,7 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
     }
 
 
-    public void Invalidate(CartesianChart chart)
+    public void CalculateGeometries(CartesianChart chart)
     {
         var controlSize = chart.ControlSize;
 

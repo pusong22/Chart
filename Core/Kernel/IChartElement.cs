@@ -4,5 +4,5 @@ public interface IChartElement
 {
     object? Tag { get; }
 
-    void Invalidate(CartesianChart chart);
+    void CalculateGeometries(CartesianChart chart);
 }

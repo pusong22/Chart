@@ -27,7 +27,6 @@ public class CartesianChart(ICartesianChartView view)
     public void Load()
     {
         IsLoad = true;
-        Update();
     }
 
     public void UnLoad()
@@ -35,42 +34,40 @@ public class CartesianChart(ICartesianChartView view)
         IsLoad = false;
     }
 
-    public void Update()
+    public async Task UpdateAsync(
+      Size controlSize,
+      IBaseLabelVisual? title,
+      IEnumerable<ICartesianAxis>? xAxes,
+      IEnumerable<ICartesianAxis>? yAxes,
+      IEnumerable<ICartesianSeries>? series)
     {
         if (!IsLoad) return;
 
-        view.InvokeUIThread(() =>
+        ControlSize = controlSize;
+
+        Title = title;
+        XAxes = xAxes?.ToArray() ?? [];
+        YAxes = yAxes?.ToArray() ?? [];
+        Series = series?.ToArray() ?? [];
+
+        await Task.Run(() =>
         {
-            ControlSize = view.ControlSize;
             Return();
-            Initialize();
-            Measure();
-            Invalidate();
-            RedrawHandler?.Invoke(this, EventArgs.Empty);
+            InitializeInternal();
+            MeasureInternal();
+            CalculateGeometriesInternal();
         });
+
+        if (IsLoad)
+            view.RequestInvalidateVisual();
     }
 
-    protected void Initialize()
+    protected void InitializeInternal()
     {
-        Title = view.Title;
+        XAxes = [.. XAxes.Cast<ICartesianAxis>()];
+        YAxes = [.. YAxes.Cast<ICartesianAxis>()];
 
-        var x = view.XAxes;
-        var y = view.YAxes;
-
-        if (x is null || x.Count() == 0)
-            x = [];
-        if (y is null || y.Count() == 0)
-            y = [];
-
-        XAxes = [.. x.Cast<ICartesianAxis>()];
-        YAxes = [.. y.Cast<ICartesianAxis>()];
-
-        var s = view.Series;
-
-        if (s == null || s.Count() == 0)
-            s = [];
-
-        Series = [.. s.Cast<ICartesianSeries>()];
+        Series = [.. Series.Cast<ICartesianSeries>()];
 
         // Known Issue: When multiple series share a common X-axis but have different sampling rates or time spans,
         // the axis bounds may be dominated by the smaller-range series, leading to incomplete rendering of others.
@@ -88,17 +85,13 @@ public class CartesianChart(ICartesianChartView view)
         }
 
         foreach (var axis in XAxes)
-        {
             axis.Reset(AxisOrientation.X);
-        }
 
         foreach (var axis in YAxes)
-        {
             axis.Reset(AxisOrientation.Y);
-        }
     }
 
-    protected void Measure()
+    protected void MeasureInternal()
     {
         var margin = new Margin(0f);
 
@@ -115,25 +108,20 @@ public class CartesianChart(ICartesianChartView view)
             margin.Top = titleSize.Height;
         }
 
-
         BaseLayoutStrategy layoutStrategy = new StackedLayoutStrategy(this);
         layoutStrategy.CalculateLayout(margin);
     }
 
-    protected void Invalidate()
+    protected void CalculateGeometriesInternal()
     {
-        Title?.Invalidate(this);
+        Title?.CalculateGeometries(this);
 
         var axes = XAxes.Concat(YAxes);
         foreach (var axis in axes)
-        {
-            axis.Invalidate(this);
-        }
+            axis.CalculateGeometries(this);
 
         foreach (var s in Series!)
-        {
-            s.Invalidate(this);
-        }
+            s.CalculateGeometries(this);
     }
 
     public void DrawFrame<TDrawnContext>(TDrawnContext context)
