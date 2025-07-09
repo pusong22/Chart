@@ -1,5 +1,5 @@
 namespace Core.Kernel;
 public interface ICartesianChartView
 {
-    void RequestInvalidateVisual();
+    void RequestInvalidateVisual(ChartDrawingCommand command);
 }

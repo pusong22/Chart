@@ -1,4 +1,3 @@
-using Core.Kernel.Drawing;
 using Core.Kernel.Drawing.Geometry;
 using Core.Kernel.Layout;
 using Core.Kernel.Painting;
@@ -9,6 +8,7 @@ namespace Core.Kernel;
 
 public class CartesianChart(ICartesianChartView view)
 {
+    private bool _drawing = false;
     private readonly HashSet<Paint> _currentPaints = [];
 
     public Point DrawnLocation { get; protected internal set; }
@@ -22,8 +22,6 @@ public class CartesianChart(ICartesianChartView view)
     public ICartesianAxis[]? YAxes { get; private set; }
     public ICartesianSeries[]? Series { get; private set; }
 
-    public event EventHandler? RedrawHandler;
-
     public void Load()
     {
         IsLoad = true;
@@ -32,24 +30,24 @@ public class CartesianChart(ICartesianChartView view)
     public void UnLoad()
     {
         IsLoad = false;
+        Return();
     }
 
-    public async Task UpdateAsync(
-      Size controlSize,
-      IBaseLabelVisual? title,
-      IEnumerable<ICartesianAxis>? xAxes,
-      IEnumerable<ICartesianAxis>? yAxes,
-      IEnumerable<ICartesianSeries>? series)
+    public async Task UpdateAsync(ChatModelSnapshot snapshot)
     {
-        if (!IsLoad) return;
+        if (!IsLoad || _drawing) return;
 
-        ControlSize = controlSize;
+        _drawing = true;
 
-        Title = title;
-        XAxes = xAxes?.ToArray() ?? [];
-        YAxes = yAxes?.ToArray() ?? [];
-        Series = series?.ToArray() ?? [];
+        ControlSize = snapshot.ControlSize;
 
+        Title = snapshot.Title;
+
+        XAxes = snapshot.XAxes?.ToArray() ?? [];
+        YAxes = snapshot.YAxes?.ToArray() ?? [];
+        Series = snapshot.Series?.ToArray() ?? [];
+
+        // BUG: 释放时机
         await Task.Run(() =>
         {
             Return();
@@ -58,23 +56,20 @@ public class CartesianChart(ICartesianChartView view)
             CalculateGeometriesInternal();
         });
 
-        if (IsLoad)
-            view.RequestInvalidateVisual();
+        ChartDrawingCommand command = new(_currentPaints);
+        view.RequestInvalidateVisual(command);
+
+        _drawing = false;
     }
 
     protected void InitializeInternal()
     {
-        XAxes = [.. XAxes.Cast<ICartesianAxis>()];
-        YAxes = [.. YAxes.Cast<ICartesianAxis>()];
-
-        Series = [.. Series.Cast<ICartesianSeries>()];
-
         // Known Issue: When multiple series share a common X-axis but have different sampling rates or time spans,
         // the axis bounds may be dominated by the smaller-range series, leading to incomplete rendering of others.
-        foreach (var series in Series)
+        foreach (var series in Series!)
         {
-            var xAxis = XAxes[series.XIndex];
-            var yAxis = YAxes[series.YIndex];
+            var xAxis = XAxes![series.XIndex];
+            var yAxis = YAxes![series.YIndex];
             var seriesBound = series.GetBound();
 
             if (seriesBound.PrimaryBound is not null)
@@ -84,12 +79,67 @@ public class CartesianChart(ICartesianChartView view)
                 yAxis.SetBound(seriesBound.SecondaryBound.Minimum, seriesBound.SecondaryBound.Maximum);
         }
 
-        foreach (var axis in XAxes)
+        foreach (var axis in XAxes!)
             axis.Reset(AxisOrientation.X);
 
-        foreach (var axis in YAxes)
+        foreach (var axis in YAxes!)
             axis.Reset(AxisOrientation.Y);
     }
+
+    //protected void InitializeInternal()
+    //{
+    //    var xAxisBounds = new Dictionary<ICartesianAxis, (float min, float max)>();
+    //    var yAxisBounds = new Dictionary<ICartesianAxis, (float min, float max)>();
+
+    //    foreach (var series in Series!)
+    //    {
+    //        var xAxis = XAxes![series.XIndex];
+    //        var yAxis = YAxes![series.YIndex];
+    //        var seriesBound = series.GetBound();
+
+    //        if (seriesBound.PrimaryBound is not null)
+    //        {
+    //            if (!xAxisBounds.TryGetValue(xAxis, out var currentXBound))
+    //            {
+    //                xAxisBounds[xAxis] = (seriesBound.PrimaryBound.Minimum, seriesBound.PrimaryBound.Maximum);
+    //            }
+    //            else
+    //            {
+    //                xAxisBounds[xAxis] = (
+    //                    Math.Min(currentXBound.min, seriesBound.PrimaryBound.Minimum),
+    //                    Math.Max(currentXBound.max, seriesBound.PrimaryBound.Maximum)
+    //                );
+    //            }
+    //        }
+
+    //        if (seriesBound.SecondaryBound is not null)
+    //        {
+    //            if (!yAxisBounds.TryGetValue(yAxis, out var currentYBound))
+    //            {
+    //                yAxisBounds[yAxis] = (seriesBound.SecondaryBound.Minimum, seriesBound.SecondaryBound.Maximum);
+    //            }
+    //            else
+    //            {
+    //                yAxisBounds[yAxis] = (
+    //                    Math.Min(currentYBound.min, seriesBound.SecondaryBound.Minimum),
+    //                    Math.Max(currentYBound.max, seriesBound.SecondaryBound.Maximum)
+    //                );
+    //            }
+    //        }
+    //    }
+
+    //    foreach (var entry in xAxisBounds)
+    //    {
+    //        entry.Key.SetBound(entry.Value.min, entry.Value.max);
+    //        entry.Key.Reset(AxisOrientation.X);
+    //    }
+
+    //    foreach (var entry in yAxisBounds)
+    //    {
+    //        entry.Key.SetBound(entry.Value.min, entry.Value.max);
+    //        entry.Key.Reset(AxisOrientation.Y);
+    //    }
+    //}
 
     protected void MeasureInternal()
     {
@@ -122,26 +172,6 @@ public class CartesianChart(ICartesianChartView view)
 
         foreach (var s in Series!)
             s.CalculateGeometries(this);
-    }
-
-    public void DrawFrame<TDrawnContext>(TDrawnContext context)
-        where TDrawnContext : DrawnContext
-    {
-        if (!_currentPaints.Any()) return;
-
-        context.BeginDraw();
-
-        foreach (var paint in _currentPaints.Where(x => x is not null).OrderBy(x => x.ZIndex))
-        {
-            context.InitializePaint(paint);
-
-            foreach (var geometry in paint.Geometries)
-                context.Draw(geometry);
-
-            context.DisposePaint();
-        }
-
-        context.EndDraw();
     }
 
     public void RequestGeometry(Paint paint, DrawnGeometry geometry)

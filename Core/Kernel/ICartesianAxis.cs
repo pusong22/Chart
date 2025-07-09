@@ -5,27 +5,30 @@ namespace Core.Kernel;
 public interface ICartesianAxis : IChartElement
 {
     Paint? AxisLinePaint { get; set; }
+    Paint? LabelPaint { get; set; }
+    Paint? NamePaint { get; set; }
+    Paint? SeparatorPaint { get; set; }
+    Paint? SubSeparatorPaint { get; set; }
+    Paint? SubTickPaint { get; set; }
+    Paint? TickPaint { get; set; }
+
     float LabelDensity { get; set; }
     Rect LabelDesiredRect { get; set; }
     Func<double, string>? Labeler { get; set; }
     Padding LabelPadding { get; set; }
-    Paint? LabelPaint { get; set; }
     float LabelRotation { get; set; }
     double Max { get; }
     double Min { get; }
     string? Name { get; set; }
     Rect NameDesiredRect { get; set; }
     Padding NamePadding { get; set; }
-    Paint? NamePaint { get; set; }
+    
     float NameRotation { get; set; }
     AxisOrientation Orientation { get; }
     AxisPosition Position { get; set; }
     int SeparatorCount { get; set; }
-    Paint? SeparatorPaint { get; set; }
-    Paint? SubSeparatorPaint { get; set; }
-    Paint? SubTickPaint { get; set; }
+ 
     float TickLength { get; set; }
-    Paint? TickPaint { get; set; }
     float X { get; set; }
     float Y { get; set; }
 
