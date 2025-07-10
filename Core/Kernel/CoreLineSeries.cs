@@ -6,8 +6,7 @@ using Core.Primitive;
 
 namespace Core.Kernel;
 
-public abstract class CoreLineSeries<TValueType, TVisual, TPath> : ILineSeries
-    where TVisual : BaseRectangleGeometry, new()
+public abstract class CoreLineSeries<TValueType, TPath> : ILineSeries
     where TPath : BaseVectoryGeometry<CubicBezierSegment>, new()
 {
     public IReadOnlyCollection<TValueType>? Values { get; set; }
@@ -19,17 +18,6 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath> : ILineSeries
         public Coordinate Control2 { get; set; }
         public Coordinate End { get; set; }
         public bool Head { get; set; } = head;
-    }
-
-    private class SeriesVisual
-    {
-        public Coordinate Start { get; set; }
-        public Coordinate Control1 { get; set; }
-        public Coordinate Control2 { get; set; }
-        public Coordinate End { get; set; }
-
-        public TVisual? StrokeVisual { get; set; }
-        public TVisual? FillVisual { get; set; }
     }
 
     private TPath? _vectorGeometry;
@@ -126,14 +114,14 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath> : ILineSeries
 
         var coordinates = ReduceDensity(primaryAxis, primaryScaler);
 
-        _vectorGeometry = new TPath();
+        _vectorGeometry ??= new TPath();
         chart.RequestGeometry(SeriesPaint, _vectorGeometry);
 
         _vectorGeometry.Segments.Clear();
 
-        foreach (var bezierData in GetCubicBezierSegment([.. coordinates]))
+        foreach (BezierData bezierData in GetCubicBezierSegment([.. coordinates]))
         {
-            var start = ToPixel(bezierData.Start, primaryScaler, secondaryScaler);
+            Point start = ToPixel(bezierData.Start, primaryScaler, secondaryScaler);
 
             if (bezierData.Head)
             {
@@ -141,67 +129,16 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath> : ILineSeries
                 _vectorGeometry.Y = start.Y;
             }
 
-            var end = ToPixel(bezierData.End, primaryScaler, secondaryScaler);
-            var control1 = ToPixel(bezierData.Control1, primaryScaler, secondaryScaler);
-            var control2 = ToPixel(bezierData.Control2, primaryScaler, secondaryScaler);
-
-            var seriesVisual = new SeriesVisual()
-            {
-                End = bezierData.End,
-                Control1 = bezierData.Control1,
-                Control2 = bezierData.Control2,
-            };
+            Point end = ToPixel(bezierData.End, primaryScaler, secondaryScaler);
+            Point control1 = ToPixel(bezierData.Control1, primaryScaler, secondaryScaler);
+            Point control2 = ToPixel(bezierData.Control2, primaryScaler, secondaryScaler);
 
             var segment = new CubicBezierSegment();
 
             UpdateSegment(end, control1, control2, segment);
 
             _vectorGeometry.Segments.Add(segment);
-
-            DrawnStrokeGeometry(chart, end, seriesVisual);
-
-            DrawnFillGeometry(chart, end, seriesVisual);
         }
-    }
-
-    #region Draw
-    private void DrawnFillGeometry(CartesianChart chart, Point end, SeriesVisual seriesVisual)
-    {
-        if (FillGeometryPaint is null) return;
-
-        seriesVisual.FillVisual = new TVisual();
-        chart.RequestGeometry(FillGeometryPaint, seriesVisual.FillVisual);
-
-        UpdateVisual(end, seriesVisual.FillVisual);
-
-        FillGeometryPaint.Style = PaintStyle.Fill;
-        FillGeometryPaint.ZIndex = 999;
-    }
-
-    private void DrawnStrokeGeometry(CartesianChart chart, Point end, SeriesVisual seriesVisual)
-    {
-        if (StrokeGeometryPaint is null) return;
-
-        seriesVisual.StrokeVisual = new TVisual();
-        chart.RequestGeometry(StrokeGeometryPaint, seriesVisual.StrokeVisual);
-
-        UpdateVisual(end, seriesVisual.StrokeVisual);
-
-        StrokeGeometryPaint.Style = PaintStyle.Stroke;
-        StrokeGeometryPaint.ZIndex = 1000;
-    }
-
-    #endregion
-
-    #region Update Visual
-    private void UpdateVisual(
-        Point end,
-        BaseRectangleGeometry geometry)
-    {
-        geometry.X = end.X;
-        geometry.Y = end.Y;
-        geometry.Width = VisualGeometrySize / 2f;
-        geometry.Height = VisualGeometrySize / 2f;
     }
 
     private void UpdateSegment(
@@ -214,8 +151,6 @@ public abstract class CoreLineSeries<TValueType, TVisual, TPath> : ILineSeries
         segment.Control1 = c1;
         segment.Control2 = c2;
     }
-
-    #endregion
 
     public IEnumerable<Coordinate> Fetch()
     {

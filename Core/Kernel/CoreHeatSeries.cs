@@ -38,6 +38,7 @@ public abstract class CoreHeatSeries<TValueType, TVisual>()
     public float CellHeight { get; set; } = 1f;
     public float CellWidth { get; set; } = 1f;
 
+    private TVisual? _bitmapGeometry;
 
     public byte[] GenerateHeatMapBitmapData(int width, int height, IEnumerable<Coordinate> points)
     {
@@ -128,15 +129,21 @@ public abstract class CoreHeatSeries<TValueType, TVisual>()
         float top = secondaryScaler.ToPixel(height);
         float bottom = secondaryScaler.ToPixel(0);
 
-        var bitmapGeometry = new TVisual
+        if (_bitmapGeometry is null ||
+            _bitmapGeometry.Width != width ||
+            _bitmapGeometry.Height != height)
         {
-            Width = width,
-            Height = height,
-            PixelData = pixelData,
-            DestRect = new Rect(left, top, right - left, bottom - top),
-        };
+            _bitmapGeometry = new TVisual
+            {
+                Width = width,
+                Height = height,
+            };
+        }
 
-        chart.RequestGeometry(HeatPaint, bitmapGeometry);
+        _bitmapGeometry.PixelData = pixelData;
+        _bitmapGeometry.DestRect = new Rect(left, top, right - left, bottom - top);
+
+        chart.RequestGeometry(HeatPaint, _bitmapGeometry);
     }
 
     public SeriesBound GetBound()

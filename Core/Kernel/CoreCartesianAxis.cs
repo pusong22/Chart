@@ -10,6 +10,18 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
     where TLabel : BaseLabelGeometry, new()
     where TLine : BaseLineGeometry, new()
 {
+    private class AxisVisual
+    {
+        public double Position { get; set; }
+        public TLine? Tick { get; set; }
+        public TLine[]? SubTick { get; set; }
+        public TLabel? TickLabel { get; set; }
+        public TLine? Separator { get; set; }
+        public TLine[]? SubSeparator { get; set; }
+    }
+
+    private readonly Dictionary<string, AxisVisual> _visuals = [];
+    private HashSet<string> _previousFrameLabels = [];
     private TLabel? _nameGeometry;
     private TLine? _tickPath;
 
@@ -183,20 +195,65 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
                 : controlSize.Width - X;
         }
 
-        DrawAxisName(chart);
+        if (NamePaint is not null && Name is not null)
+        {
+            _nameGeometry ??= new TLabel();
+            chart.RequestGeometry(NamePaint, _nameGeometry);
 
-        DrawAxisLine(chart, xo, yo);
+            _nameGeometry.Text = Name;
+            _nameGeometry.RotateTransform = NameRotation;
+            _nameGeometry.Padding = NamePadding;
+            _nameGeometry.X = NameDesiredRect.X + NameDesiredRect.Width * 0.5f;
+            _nameGeometry.Y = NameDesiredRect.Y + NameDesiredRect.Height * 0.5f;
+        }
+
+        if (AxisLinePaint is not null)
+        {
+            _tickPath ??= new TLine();
+            chart.RequestGeometry(AxisLinePaint, _tickPath);
+
+            if (Orientation == AxisOrientation.X)
+            {
+                var yp = yo + (LabelDesiredRect.Height * 0.5f + TickLength) * (Position == AxisPosition.Start ? -1 : 1);
+                _tickPath.X = LabelDesiredRect.Location.X;
+                _tickPath.X1 = LabelDesiredRect.Location.X + NameDesiredRect.Size.Width;
+                _tickPath.Y = yp;
+                _tickPath.Y1 = yp;
+            }
+            else
+            {
+                var xp = xo + (LabelDesiredRect.Width * 0.5f + TickLength) * (Position == AxisPosition.Start ? 1 : -1);
+                _tickPath.X = xp;
+                _tickPath.X1 = xp;
+                _tickPath.Y = LabelDesiredRect.Location.Y;
+                _tickPath.Y1 = LabelDesiredRect.Location.Y + NameDesiredRect.Size.Height;
+            }
+        }
 
         double step = this.GetIdealStep(NameDesiredRect.Size);
 
         var startOffset = Math.Floor(Min / step) * step;
         var labeler = GetActualLabeler();
 
+        HashSet<string> currentFrameLabels = [];
+
         foreach (var i in Extensions.EnumerateSeparators(startOffset, Max, step))
         {
             if (i < Min || i > Max) continue;
 
             string label = labeler(i);
+
+            currentFrameLabels.Add(label);
+
+            if (!_visuals.TryGetValue(label, out var visual))
+            {
+                visual = new AxisVisual
+                {
+                    Position = i
+                };
+
+                _visuals[label] = visual;
+            }
 
             float x, y;
             if (Orientation == AxisOrientation.X)
@@ -210,123 +267,139 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
                 y = scaler.ToPixel(i);
             }
 
-            DrawAxisTick(chart, x, y);
-            DrawAxisSubTick(chart, step, scaler, lxi, lxj, lyi, lyj, x, y);
+            if (TickPaint is not null)
+            {
+                visual.Tick ??= new TLine();
+                chart.RequestGeometry(TickPaint, visual.Tick);
 
-            DrawAxisLabel(chart, label, x, y);
+                UpdateTick(TickLength, x, y, visual.Tick);
 
-            DrawAxisSeparator(chart, lxi, lxj, lyi, lyj, x, y);
-            DrawAxisSubSeparator(chart, step, scaler, lxi, lxj, lyi, lyj, x, y);
+                UpdateOpacity(visual.Tick, true);
+            }
+
+            if (SubTickPaint is not null)
+            {
+                visual.SubTick ??= new TLine[SeparatorCount];
+
+                for (var j = 0; j < SeparatorCount; j++)
+                {
+                    visual.SubTick[j] ??= new TLine();
+                    chart.RequestGeometry(SubTickPaint, visual.SubTick[j]);
+                }
+
+                UpdateSubticks(visual.SubTick, scaler, step, x, y);
+
+                for (int j = 0; j < SeparatorCount; j++)
+                    UpdateOpacity(visual.SubTick[j], true);
+            }
+
+            if (LabelPaint is not null)
+            {
+                visual.TickLabel ??= new TLabel();
+                chart.RequestGeometry(LabelPaint, visual.TickLabel);
+
+                UpdateLabel(label, x, y, visual.TickLabel);
+
+                UpdateOpacity(visual.TickLabel, true);
+            }
+
+            if (SeparatorPaint is not null)
+            {
+                visual.Separator ??= new TLine();
+                chart.RequestGeometry(SeparatorPaint, visual.Separator);
+
+                UpdateSeparator(lxi, lxj, lyi, lyj, x, y, visual.Separator);
+                UpdateOpacity(visual.Separator, true);
+            }
+
+
+            if (SubSeparatorPaint is not null)
+            {
+                visual.SubSeparator ??= new TLine[SeparatorCount];
+
+                for (var j = 0; j < SeparatorCount; j++)
+                {
+                    visual.SubSeparator[j] ??= new TLine();
+                    chart.RequestGeometry(SubSeparatorPaint, visual.SubSeparator[j]);
+                }
+
+                UpdateSubSeparator(visual.SubSeparator, scaler, step, x, y,
+                    lxi, lxj, lyi, lyj);
+
+                for (int j = 0; j < SeparatorCount; j++)
+                    UpdateOpacity(visual.SubSeparator[j], true);
+            }
+
         }
-    }
 
-    #region Draw
-
-    private void DrawAxisTick(CartesianChart chart, float x, float y)
-    {
-        if (TickPaint is null) return;
-
-        var geometry = new TLine();
-        chart.RequestGeometry(TickPaint, geometry);
-
-        UpdateTick(TickLength, x, y, geometry);
-    }
-
-    private void DrawAxisSubTick(CartesianChart chart, double step, Scaler scaler, float lxi, float lxj, float lyi, float lyj, float x, float y)
-    {
-        if (SubTickPaint is null) return;
-
-        var tlines = new TLine[SeparatorCount];
-
-        for (var j = 0; j < SeparatorCount; j++)
+        // remove unvisiblity
+        List<string> removedLabels = [.. _previousFrameLabels.Except(currentFrameLabels)];
+        foreach (string label in removedLabels)
         {
-            tlines[j] = new TLine();
-            chart.RequestGeometry(SubTickPaint, tlines[j]);
+            AxisVisual visual = _visuals[label];
+
+            float x, y;
+            if (Orientation == AxisOrientation.X)
+            {
+                x = scaler.ToPixel(visual.Position);
+                y = yo;
+            }
+            else
+            {
+                x = xo;
+                y = scaler.ToPixel(visual.Position);
+            }
+
+            if (visual.Tick is not null)
+            {
+                UpdateTick(TickLength, x, y, visual.Tick);
+
+                UpdateOpacity(visual.Tick, false);
+            }
+
+            if (visual.SubTick is not null)
+            {
+                UpdateSubticks(visual.SubTick, scaler, step, x, y);
+
+                for (int j = 0; j < SeparatorCount; j++)
+                    UpdateOpacity(visual.SubTick[j], false);
+            }
+
+            if (visual.TickLabel is not null)
+            {
+                UpdateLabel(label, x, y, visual.TickLabel);
+
+                UpdateOpacity(visual.TickLabel, false);
+            }
+
+            if (visual.Separator is not null)
+            {
+                UpdateSeparator(lxi, lxj, lyi, lyj, x, y, visual.Separator);
+                UpdateOpacity(visual.Separator, false);
+            }
+
+            if (visual.SubSeparator is not null)
+            {
+                UpdateSubSeparator(visual.SubSeparator, scaler, step, x, y,
+                  lxi, lxj, lyi, lyj);
+
+                for (int j = 0; j < SeparatorCount; j++)
+                    UpdateOpacity(visual.SubSeparator[j], false);
+            }
+
+            _visuals.Remove(label);
         }
 
-        UpdateSubticks(tlines, scaler, step, x, y, lxi, lxj, lyi, lyj);
+        _previousFrameLabels = currentFrameLabels;
     }
 
-    private void DrawAxisSeparator(CartesianChart chart, float lxi, float lxj, float lyi, float lyj, float x, float y)
+    public void UpdateOpacity(DrawnGeometry geometry, bool visiblity)
     {
-        if (SeparatorPaint is null) return;
-
-        var geometry = new TLine();
-        chart.RequestGeometry(SeparatorPaint, geometry);
-
-        UpdateSeparator(lxi, lxj, lyi, lyj, x, y, geometry);
+        geometry.Opacity = visiblity ? 1 : 0;
+        geometry.Remove = !visiblity;
     }
-
-    private void DrawAxisSubSeparator(CartesianChart chart, double step, Scaler scaler, float lxi, float lxj, float lyi, float lyj, float x, float y)
-    {
-        if (SubSeparatorPaint is null) return;
-
-        var tlines = new TLine[SeparatorCount];
-
-        for (var j = 0; j < SeparatorCount; j++)
-        {
-            tlines[j] = new TLine();
-            chart.RequestGeometry(SubSeparatorPaint, tlines[j]);
-        }
-
-        UpdateSubSeparator(tlines, scaler, step, x, y,
-            lxi, lxj, lyi, lyj);
-    }
-
-    private void DrawAxisLabel(CartesianChart chart, string label, float x, float y)
-    {
-        if (LabelPaint is null) return;
-
-        var geometry = new TLabel();
-        chart.RequestGeometry(LabelPaint, geometry);
-
-        UpdateLabel(label, x, y, geometry);
-    }
-
-    private void DrawAxisName(CartesianChart chart)
-    {
-        if (NamePaint is null || Name is null) return;
-
-        _nameGeometry = new TLabel();
-        chart.RequestGeometry(NamePaint, _nameGeometry);
-
-        _nameGeometry.Text = Name;
-        _nameGeometry.RotateTransform = NameRotation;
-        _nameGeometry.Padding = NamePadding;
-        _nameGeometry.X = NameDesiredRect.X + NameDesiredRect.Width * 0.5f;
-        _nameGeometry.Y = NameDesiredRect.Y + NameDesiredRect.Height * 0.5f;
-    }
-
-    private void DrawAxisLine(CartesianChart chart, float xo, float yo)
-    {
-        if (AxisLinePaint is null) return;
-
-        _tickPath = new TLine();
-        chart.RequestGeometry(AxisLinePaint, _tickPath);
-
-        if (Orientation == AxisOrientation.X)
-        {
-            var yp = yo + (LabelDesiredRect.Height * 0.5f + TickLength) * (Position == AxisPosition.Start ? -1 : 1);
-            _tickPath.X = LabelDesiredRect.Location.X;
-            _tickPath.X1 = LabelDesiredRect.Location.X + NameDesiredRect.Size.Width;
-            _tickPath.Y = yp;
-            _tickPath.Y1 = yp;
-        }
-        else
-        {
-            var xp = xo + (LabelDesiredRect.Width * 0.5f + TickLength) * (Position == AxisPosition.Start ? 1 : -1);
-            _tickPath.X = xp;
-            _tickPath.X1 = xp;
-            _tickPath.Y = LabelDesiredRect.Location.Y;
-            _tickPath.Y1 = LabelDesiredRect.Location.Y + NameDesiredRect.Size.Height;
-        }
-    }
-
-    #endregion
-
 
     #region Update Visual
-
     private void UpdateSubSeparator(
         BaseLineGeometry[] subSeparators,
         Scaler scaler,
@@ -346,21 +419,9 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
 
             float xs = 0f, ys = 0f;
             if (Orientation == AxisOrientation.X)
-            {
                 xs = scaler.MeasureInPixels(step * kl);
-                if (x + xs >= lxj || x + xs <= lxi)
-                {
-                    //continue;
-                }
-            }
             else
-            {
                 ys = scaler.MeasureInPixels(step * kl);
-                if (y - ys >= lyj || y - ys <= lyi)
-                {
-                    //continue;
-                }
-            }
 
             UpdateSeparator(lxi, lxj, lyi, lyj, x + xs, y - ys, subSeparator);
         }
@@ -415,11 +476,7 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
         Scaler scaler,
         double step,
         float x,
-        float y,
-        float lxi,
-        float lxj,
-        float lyi,
-        float lyj)
+        float y)
     {
         for (var j = 0; j < subticks.Length; j++)
         {
@@ -428,27 +485,13 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
 
             float xs = 0f, ys = 0f;
             if (Orientation == AxisOrientation.X)
-            {
                 xs = scaler.MeasureInPixels(step * kl);
-                if (x + xs >= lxj || x + xs <= lxi)
-                {
-                    //continue;
-                }
-            }
             else
-            {
                 ys = scaler.MeasureInPixels(step * kl);
-                if (y - ys >= lyj || y - ys <= lyi)
-                {
-                    //continue;
-                }
-            }
 
             UpdateTick(2.5f, x + xs, y - ys, subtick);
         }
     }
-
-
 
     private void UpdateTick(
         float tickLength,
@@ -555,6 +598,6 @@ public abstract partial class CoreCartesianAxis<TLabel, TLine> : ICartesianAxis
 
     private Func<double, string> GetActualLabeler()
     {
-        return Labeler ??= t => t.ToString("N10");
+        return Labeler ??= t => t.ToString("N3");
     }
 }

@@ -16,6 +16,7 @@ public abstract class DrawnGeometry
     public bool HasRotation => RotateTransform != 0;
 
     public Paint? Paint { get; protected internal set; }
+    public bool Remove { get; internal set; }
 
     public abstract void Draw<TDrawnContext>(TDrawnContext context)
         where TDrawnContext : DrawnContext;

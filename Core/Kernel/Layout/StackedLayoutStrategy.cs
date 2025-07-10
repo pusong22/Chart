@@ -25,12 +25,12 @@ namespace Core.Kernel.Layout
 
             for (int i = 0; i < xaxisCount; i++)
             {
-                var axis = chart.XAxes[i];
+                ICartesianAxis axis = chart.XAxes[i];
 
-                var nameSize = axis.MeasureNameLabelSize();
-                var labelSize = axis.MeasureLabelSize(chart.ControlSize);
+                Size nameSize = axis.MeasureNameLabelSize();
+                Size labelSize = axis.MeasureLabelSize(chart.ControlSize);
 
-                var temp = nameSize.Height + labelSize.Height + axis.TickLength;
+                float temp = nameSize.Height + labelSize.Height + axis.TickLength;
 
                 if (labelSize.Width * 0.5f > l) l = labelSize.Width * 0.5f;
                 if (labelSize.Width * 0.5f > r) r = labelSize.Width * 0.5f;
@@ -53,12 +53,12 @@ namespace Core.Kernel.Layout
 
             for (int i = 0; i < yaxisCount; i++)
             {
-                var axis = chart.YAxes[i];
+                ICartesianAxis axis = chart.YAxes[i];
 
-                var nameSize = axis.MeasureNameLabelSize();
-                var labelSize = axis.MeasureLabelSize(chart.ControlSize);
+                Size nameSize = axis.MeasureNameLabelSize();
+                Size labelSize = axis.MeasureLabelSize(chart.ControlSize);
 
-                var temp = nameSize.Width + labelSize.Width + axis.TickLength;
+                float temp = nameSize.Width + labelSize.Width + axis.TickLength;
 
                 if (labelSize.Height * 0.5f > t) t = labelSize.Height * 0.5f;
                 if (labelSize.Height * 0.5f > b) b = labelSize.Height * 0.5f;

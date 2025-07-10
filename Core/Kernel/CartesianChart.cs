@@ -8,7 +8,6 @@ namespace Core.Kernel;
 
 public class CartesianChart(ICartesianChartView view)
 {
-    private bool _drawing = false;
     private readonly HashSet<Paint> _currentPaints = [];
 
     public Point DrawnLocation { get; protected internal set; }
@@ -30,14 +29,11 @@ public class CartesianChart(ICartesianChartView view)
     public void UnLoad()
     {
         IsLoad = false;
-        Return();
     }
 
     public async Task UpdateAsync(ChatModelSnapshot snapshot)
     {
-        if (!IsLoad || _drawing) return;
-
-        _drawing = true;
+        if (!IsLoad) return;
 
         ControlSize = snapshot.ControlSize;
 
@@ -47,10 +43,9 @@ public class CartesianChart(ICartesianChartView view)
         YAxes = snapshot.YAxes?.ToArray() ?? [];
         Series = snapshot.Series?.ToArray() ?? [];
 
-        // BUG: 释放时机
         await Task.Run(() =>
         {
-            Return();
+            _currentPaints.Clear();
             InitializeInternal();
             MeasureInternal();
             CalculateGeometriesInternal();
@@ -58,8 +53,6 @@ public class CartesianChart(ICartesianChartView view)
 
         ChartDrawingCommand command = new(_currentPaints);
         view.RequestInvalidateVisual(command);
-
-        _drawing = false;
     }
 
     protected void InitializeInternal()
@@ -178,18 +171,7 @@ public class CartesianChart(ICartesianChartView view)
     {
         _currentPaints.Add(paint);
         geometry.Paint = paint;
-        geometry.Opacity = 1f;
 
         paint.Geometries.Add(geometry);
-    }
-
-    public void Return()
-    {
-        foreach (var paint in _currentPaints)
-        {
-            paint.Geometries.Clear();
-        }
-
-        _currentPaints.Clear();
     }
 }
