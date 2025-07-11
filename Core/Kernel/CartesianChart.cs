@@ -6,7 +6,7 @@ using Core.Primitive;
 
 namespace Core.Kernel;
 
-public class CartesianChart(ICartesianChartView view)
+public class CartesianChart()
 {
     private readonly HashSet<Paint> _currentPaints = [];
 
@@ -31,9 +31,9 @@ public class CartesianChart(ICartesianChartView view)
         IsLoad = false;
     }
 
-    public async Task UpdateAsync(ChatModelSnapshot snapshot)
+    public async Task<ChartDrawingCommand> UpdateAsync(ChatModelSnapshot snapshot)
     {
-        if (!IsLoad) return;
+        if (!IsLoad) return new([]);
 
         ControlSize = snapshot.ControlSize;
 
@@ -51,8 +51,7 @@ public class CartesianChart(ICartesianChartView view)
             CalculateGeometriesInternal();
         });
 
-        ChartDrawingCommand command = new(_currentPaints);
-        view.RequestInvalidateVisual(command);
+        return new(_currentPaints);
     }
 
     protected void InitializeInternal()
